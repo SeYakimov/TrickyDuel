@@ -9,10 +9,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-/**
- * Created by qwert on 17.06.2017.
- */
-
 public class Border {
 
     public static final int BORDER_WIDTH = Duel.WIDTH;

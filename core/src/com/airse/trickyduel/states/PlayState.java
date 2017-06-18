@@ -5,6 +5,7 @@ import com.airse.trickyduel.Duel;
 import com.airse.trickyduel.models.Border;
 import com.airse.trickyduel.models.Bullet;
 import com.airse.trickyduel.models.Player;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,10 +15,6 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-/**
- * Created by qwert on 18.06.2017.
- */
 
 public class PlayState extends State implements InputProcessor {
 
@@ -46,6 +43,8 @@ public class PlayState extends State implements InputProcessor {
     public PlayState(GameStateManager gsm) {
         super(gsm);
 
+        Gdx.input.setInputProcessor(this);
+
         border = new Border(Difficulty.NORMAL);
         playerTop = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.8f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), true);
         playerBottom = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.2f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), false);
@@ -58,15 +57,10 @@ public class PlayState extends State implements InputProcessor {
         SKeyDown = false;
         AKeyDown = false;
         DKeyDown = false;
-        lastTouch = new Vector2();
+//        lastTouch = new Vector2();
 
         bullets = new Array<Bullet>();
-        bullets.add(new Bullet(playerTop.getPosition().cpy().add(playerBottom.PLAYER_WIDTH / 2, 0), true));
 
-//        Gdx.input.setInputProcessor(this);
-//        for(int i = 0; i < 4; i++) {
-//            touches.put(i, new TouchInfo());
-//        }
     }
 
     @Override
@@ -105,7 +99,7 @@ public class PlayState extends State implements InputProcessor {
         playerTop.render();
         playerBottom.render();
         for (Bullet bullet : bullets) {
-            bullet.render();
+            bullet.render(border);
         }
     }
 
@@ -128,7 +122,6 @@ public class PlayState extends State implements InputProcessor {
                 break;
             case Input.Keys.DOWN:
                 if (!DownKeyDown) DownKeyDown = true;
-                System.out.println("Hello");
                 //playerBottom.moveDown();
                 break;
             case Input.Keys.LEFT:
@@ -153,11 +146,11 @@ public class PlayState extends State implements InputProcessor {
                 break;
             // Bottom player shoots
             case Input.Keys.SPACE:
-                bullets.add(new Bullet(playerBottom.getPosition(), false));
+                bullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.PLAYER_WIDTH / 2, playerBottom.PLAYER_HEIGHT), false));
                 break;
             // Top player shoots
             case Input.Keys.P:
-                bullets.add(new Bullet(playerTop.getPosition(), true));
+                bullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.PLAYER_WIDTH / 2, playerTop.PLAYER_HEIGHT), true));
                 break;
             default:
                 break;

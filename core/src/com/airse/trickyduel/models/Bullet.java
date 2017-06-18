@@ -8,10 +8,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-/**
- * Created by qwert on 17.06.2017.
- */
-
 public class Bullet {
     public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
     public static final int MOVEMENT = 2;
@@ -19,7 +15,7 @@ public class Bullet {
     private ShapeRenderer shape;
     private Vector2 position;
     private Circle bounds;
-    boolean isTop;
+    private boolean isTop;
 
     public Bullet(Vector2 position, boolean isTop) {
         this.position = position;
@@ -48,15 +44,26 @@ public class Bullet {
         bounds.setPosition(position);
     }
 
-    public void render(){
+    public void render(Border border){
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop){
-            shape.setColor(Color.valueOf(Duel.TOP_COLOR));
+            if (position.y < border.getPosition().y) {
+                shape.setColor(Color.BLACK);
+            }
+            else {
+                shape.setColor(Color.valueOf(Duel.TOP_COLOR));
+            }
+            shape.circle(position.x, position.y, RADIUS);
         }
         else{
-            shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
+            if (position.y > border.getPosition().y) {
+                shape.setColor(Color.BLACK);
+            }
+            else {
+                shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
+            }
+            shape.circle(position.x, position.y, RADIUS);
         }
-        shape.circle(position.x, position.y, RADIUS);
         shape.end();
     }
 
