@@ -3,8 +3,8 @@ package com.airse.trickyduel.models;
 import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by qwert on 17.06.2017.
@@ -17,6 +17,7 @@ public class Player {
 
     private boolean isTop;
     private Vector2 position;
+    private Rectangle bounds;
 
     private ShapeRenderer shape;
 
@@ -24,6 +25,9 @@ public class Player {
         this.position = position;
         shape = new ShapeRenderer();
         this.isTop = isTop;
+        bounds = new Rectangle();
+        bounds.setPosition(position);
+        bounds.setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
     }
 
     public Vector2 getPosition() {
@@ -46,23 +50,10 @@ public class Player {
     public void moveUp()
     {
         position.y += MOVEMENT;
-//        if (isTop) {
-//            if (position.y > Duel.HEIGHT - PLAYER_HEIGHT) position.y = Duel.HEIGHT - PLAYER_HEIGHT;
-//        }
-//        else{
-//            if (position.y > border.getPosition().y - PLAYER_HEIGHT) position.y = border.getPosition().y - PLAYER_HEIGHT;
-//        }
     }
     public void moveDown()
     {
         position.y -= MOVEMENT;
-//        if (isTop) {
-//            if (position.y < border.getPosition().y) position.y = border.getPosition().y;
-//        }
-//        else {
-//            if (position.y < 0) position.y = 0;
-//        }
-
 
     }
     public void update(Border border){
@@ -74,6 +65,7 @@ public class Player {
             if (position.y < 0) position.y = 0;
             if (position.y > border.getPosition().y - PLAYER_HEIGHT) position.y = border.getPosition().y - PLAYER_HEIGHT;
         }
+        bounds.setPosition(position);
     }
 
     public void render(){
@@ -91,5 +83,13 @@ public class Player {
 
     public void dispose() {
         shape.dispose();
+    }
+
+    public Rectangle getBounds() {
+        return bounds;
+    }
+
+    public void setBounds(Rectangle bounds) {
+        this.bounds = bounds;
     }
 }

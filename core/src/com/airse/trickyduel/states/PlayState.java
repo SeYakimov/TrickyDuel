@@ -8,26 +8,21 @@ import com.airse.trickyduel.models.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeType;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 public class PlayState extends State implements InputProcessor {
-
-//    class TouchInfo {
-//        public float touchX = 0;
-//        public float touchY = 0;
-//        public boolean touched = false;
-//    }
-//    private Map<Integer,TouchInfo> touches = new HashMap<Integer,TouchInfo>();
 
     private Border border;
     private Player playerBottom, playerTop;
     private Array<Bullet> bullets;
+    private ShapeRenderer shape;
+    private BitmapFont font;
+    private String s;
 
     private boolean UpKeyDown;
     private boolean DownKeyDown;
@@ -37,6 +32,10 @@ public class PlayState extends State implements InputProcessor {
     private boolean SKeyDown;
     private boolean AKeyDown;
     private boolean DKeyDown;
+
+    private boolean topWon;
+    private boolean bottomWon;
+    private int winner;
 
     private Vector2 lastTouch;
 
@@ -48,6 +47,8 @@ public class PlayState extends State implements InputProcessor {
         border = new Border(Difficulty.NORMAL);
         playerTop = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.8f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), true);
         playerBottom = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.2f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), false);
+        shape = new ShapeRenderer();
+        font = new BitmapFont();
 
         UpKeyDown = false;
         DownKeyDown = false;
@@ -57,7 +58,11 @@ public class PlayState extends State implements InputProcessor {
         SKeyDown = false;
         AKeyDown = false;
         DKeyDown = false;
-//        lastTouch = new Vector2();
+
+        topWon = false;
+        bottomWon = false;
+
+        winner = 0;
 
         bullets = new Array<Bullet>();
 
@@ -86,7 +91,26 @@ public class PlayState extends State implements InputProcessor {
 
         for (Bullet bullet : bullets) {
             bullet.update();
+            if (bullet.isTop()) {
+                if (bullet.isCollides(playerBottom)){
+                    border.moveDown();
+                    bullets.removeValue(bullet, true);
+                }
+            }
+            else {
+                if (bullet.isCollides(playerTop)){
+                    border.moveUp();
+                    bullets.removeValue(bullet, true);
+                }
+            }
         }
+        if (border.isGameOver() != winner) {
+            winner = border.isGameOver();
+            if (winner == 1) topWon = true;
+            else if (winner == -1) bottomWon = true;
+        }
+
+
 
 //        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
 //        camera.update();
@@ -100,6 +124,17 @@ public class PlayState extends State implements InputProcessor {
         playerBottom.render();
         for (Bullet bullet : bullets) {
             bullet.render(border);
+        }
+        if (winner != 0){
+            shape.begin(ShapeRenderer.ShapeType.Filled);
+            shape.setColor(1, 1, 1, 0.1f);
+            shape.rect(0, 0, Duel.WIDTH, Duel.HEIGHT);
+            shape.end();
+            sb.begin();
+            if (topWon) s = "Orange won";
+            else if (bottomWon) s = "Cyan won";
+            font.draw(sb, s, 100, Duel.HEIGHT / 2);
+            sb.end();
         }
     }
 

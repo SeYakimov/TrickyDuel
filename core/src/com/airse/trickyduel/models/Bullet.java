@@ -3,26 +3,30 @@ package com.airse.trickyduel.models;
 import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 public class Bullet {
     public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
+    public static final int INNER_RADIUS = (int)(Math.sqrt((RADIUS * RADIUS) / 2));
     public static final int MOVEMENT = 2;
 
     private ShapeRenderer shape;
     private Vector2 position;
-    private Circle bounds;
+    private Rectangle bounds;
+
+    public boolean isTop() {
+        return isTop;
+    }
+
     private boolean isTop;
 
     public Bullet(Vector2 position, boolean isTop) {
         this.position = position;
         this.isTop = isTop;
-        bounds = new Circle();
+        bounds = new Rectangle();
         bounds.setPosition(position);
-        bounds.setRadius(RADIUS);
+        bounds.setSize(INNER_RADIUS);
         shape = new ShapeRenderer();
     }
 
@@ -35,6 +39,11 @@ public class Bullet {
             moveUp();
         }
     }
+
+    public boolean isCollides(Player player){
+        return bounds.overlaps(player.getBounds());
+    }
+
     private void moveDown(){
         position.y -= MOVEMENT;
         bounds.setPosition(position);
@@ -69,10 +78,5 @@ public class Bullet {
 
     public void dispose() {
         shape.dispose();
-    }
-
-    public boolean isCollide(Rectangle rect)
-    {
-        return false;
     }
 }

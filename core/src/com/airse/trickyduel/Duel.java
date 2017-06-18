@@ -5,12 +5,13 @@ import com.airse.trickyduel.states.PlayState;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Duel extends ApplicationAdapter {
 	public static final int WIDTH = 320;
 	public static final int HEIGHT = 480;
+	public static final int PLAYER_WIDTH = (int)(0.1f * WIDTH);
+	public static final int PLAYER_HEIGHT = PLAYER_WIDTH;
 
     public static final String PURPLE = "651fff";
     public static final String GREEN = "c6ff00";

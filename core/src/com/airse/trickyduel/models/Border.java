@@ -3,11 +3,8 @@ package com.airse.trickyduel.models;
 import com.airse.trickyduel.Difficulty;
 import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 
 public class Border {
 
@@ -54,6 +51,16 @@ public class Border {
 
     public void update(float dt){
 
+    }
+
+    public int isGameOver(){
+        if (position.y > Duel.HEIGHT - Duel.PLAYER_HEIGHT){
+            return 1;
+        }
+        else if (position.y < Duel.PLAYER_HEIGHT){
+            return -1;
+        }
+        else return 0;
     }
 
     public void render(){
