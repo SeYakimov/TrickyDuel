@@ -16,6 +16,8 @@ public class Duel extends ApplicationAdapter {
     public static final String GREEN = "c6ff00";
     public static final String CYAN = "18ffff";
     public static final String ORANGE = "ff6e40";
+    public static final String TOP_COLOR = ORANGE;
+    public static final String BOTTOM_COLOR = CYAN;
 
 	public static final String TITLE = "Tricky Duel";
 
@@ -33,6 +35,7 @@ public class Duel extends ApplicationAdapter {
 	@Override
 	public void render () {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         gsm.update(Gdx.graphics.getDeltaTime());
         gsm.render(sb);
 	}

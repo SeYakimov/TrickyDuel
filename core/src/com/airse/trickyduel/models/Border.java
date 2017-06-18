@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -14,10 +15,11 @@ import com.badlogic.gdx.math.Vector3;
 
 public class Border {
 
-    public static final int BORDER_WIDTH = 320;
-    public static final int BORDER_HEIGHT = 480;
+    public static final int BORDER_WIDTH = Duel.WIDTH;
+    public static final int BORDER_HEIGHT = Duel.HEIGHT;
+    public static final int MOVEMENT = 4;
 
-    private Vector3 position;
+    private Vector2 position;
     private Difficulty difficulty;
     private ShapeRenderer shape;
 
@@ -28,7 +30,7 @@ public class Border {
 
     }
 
-    public Vector3 getPosition() {
+    public Vector2 getPosition() {
         return position;
     }
 
@@ -36,19 +38,22 @@ public class Border {
         switch (difficulty)
         {
             case EASY:
-
+                position = new Vector2(0, 0.75f * Duel.HEIGHT);
                 break;
             case NORMAL:
-                position = new Vector3(0, 240, 0);
+                position = new Vector2(0, 0.5f * Duel.HEIGHT);
                 break;
             case HARD:
-
+                position = new Vector2(0, 0.25f * Duel.HEIGHT);
                 break;
         }
     }
 
-    public void changePosition(int dy){
-        position = new Vector3(position.x, position.y + dy, 0);
+    public void moveUp(){
+        position.y += MOVEMENT;
+    }
+    public void moveDown(){
+        position.y -= MOVEMENT;
     }
 
     public void update(float dt){
@@ -57,14 +62,14 @@ public class Border {
 
     public void render(){
         shape.begin(ShapeRenderer.ShapeType.Filled);
-        shape.setColor(Color.valueOf(Duel.ORANGE));
+        shape.setColor(Color.valueOf(Duel.TOP_COLOR));
         shape.rect(0, 0, BORDER_WIDTH, BORDER_HEIGHT);
-        shape.setColor(Color.valueOf(Duel.CYAN));
+        shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
         shape.rect(position.x, position.y, BORDER_WIDTH, BORDER_HEIGHT);
         shape.end();
     }
 
     public void dispose() {
-
+        shape.dispose();
     }
 }
