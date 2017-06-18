@@ -7,6 +7,9 @@ import com.airse.trickyduel.Duel;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+		config.height = Duel.HEIGHT;
+		config.width = Duel.WIDTH;
+		config.title = Duel.TITLE;
 		new LwjglApplication(new Duel(), config);
 	}
 }
