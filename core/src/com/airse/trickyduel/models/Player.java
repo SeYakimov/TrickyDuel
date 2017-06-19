@@ -13,11 +13,13 @@ import com.badlogic.gdx.math.Vector2;
 public class Player {
     public static final int PLAYER_WIDTH = (int)(0.1f * Duel.WIDTH);
     public static final int PLAYER_HEIGHT = PLAYER_WIDTH;
-    public static final int MOVEMENT = (int)(0.01f * Duel.WIDTH);
+    public static final int MOVEMENT = (int)(0.02f * Duel.WIDTH);
 
     private boolean isTop;
     private Vector2 position;
     private Rectangle bounds;
+    private int bulletsNum;
+    private int bulletsLimit;
 
     private ShapeRenderer shape;
 
@@ -28,6 +30,8 @@ public class Player {
         bounds = new Rectangle();
         bounds.setPosition(position);
         bounds.setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
+        bulletsNum = 30;
+        bulletsLimit = 30;
     }
 
     public Vector2 getPosition() {
@@ -91,5 +95,21 @@ public class Player {
 
     public void setBounds(Rectangle bounds) {
         this.bounds = bounds;
+    }
+
+    public int getBulletsNum() {
+        return bulletsNum;
+    }
+
+    public void setBulletsNum(int bulletsNum) {
+        this.bulletsNum = bulletsNum;
+    }
+
+    public void addBullet(){
+        bulletsNum++;
+    }
+
+    public int getBulletsLimit() {
+        return bulletsLimit;
     }
 }

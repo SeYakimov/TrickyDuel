@@ -10,7 +10,7 @@ public class Border {
 
     public static final int BORDER_WIDTH = Duel.WIDTH;
     public static final int BORDER_HEIGHT = Duel.HEIGHT;
-    public static final int MOVEMENT = 4;
+    public static final int MOVEMENT = 8;
 
     private Vector2 position;
     private Difficulty difficulty;

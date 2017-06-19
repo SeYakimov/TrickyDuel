@@ -17,6 +17,11 @@ public class MenuState extends State {
     }
 
     @Override
+    public void resize(int width, int height) {
+
+    }
+
+    @Override
     public void update(float dt) {
 
     }

@@ -8,21 +8,27 @@ import com.airse.trickyduel.models.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeType;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class PlayState extends State implements InputProcessor {
 
+    //private OrthographicCamera camera;
     private Border border;
     private Player playerBottom, playerTop;
-    private Array<Bullet> bullets;
+    private Array<Bullet> topBullets, bottomBullets;
     private ShapeRenderer shape;
     private BitmapFont font;
     private String s;
+
+    private Texture ball;
 
     private boolean UpKeyDown;
     private boolean DownKeyDown;
@@ -44,11 +50,16 @@ public class PlayState extends State implements InputProcessor {
 
         Gdx.input.setInputProcessor(this);
 
+        //camera = new OrthographicCamera();
+        camera.setToOrtho(false, 320, 480);
         border = new Border(Difficulty.NORMAL);
         playerTop = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.8f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), true);
         playerBottom = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.2f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), false);
         shape = new ShapeRenderer();
         font = new BitmapFont();
+        lastTouch = new Vector2();
+
+        ball = new Texture("ball.png");
 
         UpKeyDown = false;
         DownKeyDown = false;
@@ -64,7 +75,8 @@ public class PlayState extends State implements InputProcessor {
 
         winner = 0;
 
-        bullets = new Array<Bullet>();
+        topBullets = new Array<Bullet>();
+        bottomBullets = new Array<Bullet>();
 
     }
 
@@ -73,6 +85,12 @@ public class PlayState extends State implements InputProcessor {
 
     }
 
+    @Override
+    public void resize(int width, int height) {
+        camera.viewportHeight = 720;                 // Viewport of 30 units!
+        camera.viewportWidth = 720 * width / height; // Lets keep things in proportion.
+        camera.update();
+    }
 
 
     @Override
@@ -89,21 +107,31 @@ public class PlayState extends State implements InputProcessor {
         playerTop.update(border);
         playerBottom.update(border);
 
-        for (Bullet bullet : bullets) {
-            bullet.update();
-            if (bullet.isTop()) {
-                if (bullet.isCollides(playerBottom)){
-                    border.moveDown();
-                    bullets.removeValue(bullet, true);
-                }
-            }
-            else {
-                if (bullet.isCollides(playerTop)){
-                    border.moveUp();
-                    bullets.removeValue(bullet, true);
+        for (Bullet top : topBullets) {
+            for (Bullet bottom : bottomBullets) {
+                if (top.isCollides(bottom.getBounds()))
+                {
+                    topBullets.removeValue(top, true);
+                    bottomBullets.removeValue(bottom, true);
                 }
             }
         }
+
+        for (Bullet top : topBullets) {
+            top.update();
+            if (top.isCollides(playerBottom.getBounds())){
+                border.moveDown();
+                topBullets.removeValue(top, true);
+            }
+        }
+        for (Bullet bottom : bottomBullets) {
+            bottom.update();
+            if (bottom.isCollides(playerTop.getBounds())){
+                border.moveUp();
+                bottomBullets.removeValue(bottom, true);
+            }
+        }
+
         if (border.isGameOver() != winner) {
             winner = border.isGameOver();
             if (winner == 1) topWon = true;
@@ -113,17 +141,22 @@ public class PlayState extends State implements InputProcessor {
 
 
 //        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
-//        camera.update();
+        camera.position.y = playerTop.getPosition().y;
+        camera.update();
 
     }
 
     @Override
     public void render(SpriteBatch sb) {
+        sb.setProjectionMatrix(camera.combined);
         border.render();
         playerTop.render();
         playerBottom.render();
-        for (Bullet bullet : bullets) {
-            bullet.render(border);
+        for (Bullet top : topBullets) {
+            top.render(border);
+        }
+        for (Bullet bottom : bottomBullets) {
+            bottom.render(border);
         }
         if (winner != 0){
             shape.begin(ShapeRenderer.ShapeType.Filled);
@@ -131,11 +164,14 @@ public class PlayState extends State implements InputProcessor {
             shape.rect(0, 0, Duel.WIDTH, Duel.HEIGHT);
             shape.end();
             sb.begin();
-            if (topWon) s = "Orange won";
-            else if (bottomWon) s = "Cyan won";
+            if (topWon) s = "Orange won!";
+            else if (bottomWon) s = "Cyan won!";
             font.draw(sb, s, 100, Duel.HEIGHT / 2);
             sb.end();
         }
+        sb.begin();
+        sb.draw(ball, camera.position.x - ball.getWidth() / 2, camera.position.y - ball.getHeight() / 2);
+        sb.end();
     }
 
     @Override
@@ -143,8 +179,11 @@ public class PlayState extends State implements InputProcessor {
         border.dispose();
         playerTop.dispose();
         playerBottom.dispose();
-        for (Bullet bullet : bullets) {
-            bullet.dispose();
+        for (Bullet top : topBullets) {
+            top.dispose();
+        }
+        for (Bullet bottom : bottomBullets) {
+            bottom.dispose();
         }
     }
 
@@ -180,12 +219,12 @@ public class PlayState extends State implements InputProcessor {
                 if (!DKeyDown) DKeyDown = true;
                 break;
             // Bottom player shoots
-            case Input.Keys.SPACE:
-                bullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.PLAYER_WIDTH / 2, playerBottom.PLAYER_HEIGHT), false));
+            case Input.Keys.P:
+                bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.PLAYER_WIDTH / 2, playerBottom.PLAYER_HEIGHT), false));
                 break;
             // Top player shoots
-            case Input.Keys.P:
-                bullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.PLAYER_WIDTH / 2, playerTop.PLAYER_HEIGHT), true));
+            case Input.Keys.SPACE:
+                topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.PLAYER_WIDTH / 2, playerTop.PLAYER_HEIGHT), true));
                 break;
             default:
                 break;

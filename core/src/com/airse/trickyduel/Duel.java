@@ -32,6 +32,10 @@ public class Duel extends ApplicationAdapter {
         Gdx.gl.glClearColor(0.35f, 0, 1, 1);
 		gsm.push(new PlayState(gsm));
 	}
+	@Override
+	public void resize(int width, int height){
+		gsm.resize(width, height);
+	}
 
 	@Override
 	public void render () {
