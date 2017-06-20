@@ -2,6 +2,7 @@ package com.airse.trickyduel.models;
 
 import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -60,19 +61,28 @@ public class Player {
         position.y -= MOVEMENT;
 
     }
-    public void update(Border border){
+    public void update(Border border, OrthographicCamera camera){
         if (isTop){
             if (position.y < border.getPosition().y) position.y = border.getPosition().y;
-            if (position.y > Duel.HEIGHT - PLAYER_HEIGHT) position.y = Duel.HEIGHT - PLAYER_HEIGHT;
+            if (position.y > camera.position.y + camera.viewportHeight / 2 - PLAYER_HEIGHT)
+                position.y = camera.position.y + camera.viewportHeight / 2 - PLAYER_HEIGHT;
+//            if (position.y > Duel.HEIGHT - PLAYER_HEIGHT) position.y = Duel.HEIGHT - PLAYER_HEIGHT;
         }
         else{
-            if (position.y < 0) position.y = 0;
+//            if (position.y < 0) position.y = 0;
             if (position.y > border.getPosition().y - PLAYER_HEIGHT) position.y = border.getPosition().y - PLAYER_HEIGHT;
+            if (position.y < camera.position.y - camera.viewportHeight / 2) position.y = camera.position.y - camera.viewportHeight / 2;
         }
         bounds.setPosition(position);
+//        System.out.print(isTop? "Top:" : "Bottom:");
+//        System.out.println(position.y);
+//        System.out.println("cam0:" + (camera.position.y - camera.viewportHeight / 2));
+//        System.out.println("camCenter:" + (camera.position.y));
+
     }
 
-    public void render(){
+    public void render(OrthographicCamera camera){
+        shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop) {
             shape.setColor(Color.valueOf(Duel.TOP_COLOR));

@@ -2,6 +2,7 @@ package com.airse.trickyduel.models;
 
 import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -53,7 +54,8 @@ public class Bullet {
         bounds.setPosition(position);
     }
 
-    public void render(Border border){
+    public void render(Border border ,OrthographicCamera camera){
+        shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop){
             if (position.y < border.getPosition().y) {

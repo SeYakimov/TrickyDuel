@@ -52,7 +52,9 @@ public class PlayState extends State implements InputProcessor {
 
         //camera = new OrthographicCamera();
         camera.setToOrtho(false, 320, 480);
-        border = new Border(Difficulty.NORMAL);
+
+        camera.update();
+        border = new Border(Difficulty.NORMAL, camera);
         playerTop = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.8f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), true);
         playerBottom = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.2f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), false);
         shape = new ShapeRenderer();
@@ -87,8 +89,8 @@ public class PlayState extends State implements InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        camera.viewportHeight = 720;                 // Viewport of 30 units!
-        camera.viewportWidth = 720 * width / height; // Lets keep things in proportion.
+        camera.viewportWidth = 320;                 // Viewport of 30 units!
+        camera.viewportHeight = 320 * height / width; // Lets keep things in proportion.
         camera.update();
     }
 
@@ -104,8 +106,8 @@ public class PlayState extends State implements InputProcessor {
         if (AKeyDown) playerTop.moveLeft();
         if (DKeyDown) playerTop.moveRight();
 
-        playerTop.update(border);
-        playerBottom.update(border);
+        playerTop.update(border, camera);
+        playerBottom.update(border, camera);
 
         for (Bullet top : topBullets) {
             for (Bullet bottom : bottomBullets) {
@@ -141,7 +143,7 @@ public class PlayState extends State implements InputProcessor {
 
 
 //        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
-        camera.position.y = playerTop.getPosition().y;
+//        camera.position.y = playerTop.getPosition().y;
         camera.update();
 
     }
@@ -149,14 +151,14 @@ public class PlayState extends State implements InputProcessor {
     @Override
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(camera.combined);
-        border.render();
-        playerTop.render();
-        playerBottom.render();
+        border.render(camera);
+        playerTop.render(camera);
+        playerBottom.render(camera);
         for (Bullet top : topBullets) {
-            top.render(border);
+            top.render(border, camera);
         }
         for (Bullet bottom : bottomBullets) {
-            bottom.render(border);
+            bottom.render(border, camera);
         }
         if (winner != 0){
             shape.begin(ShapeRenderer.ShapeType.Filled);
