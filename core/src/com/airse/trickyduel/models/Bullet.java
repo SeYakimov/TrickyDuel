@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bullet {
     public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
-    public static final int INNER_RADIUS = (int)(Math.sqrt((RADIUS * RADIUS) / 2));
+    public static final int INNER_RADIUS = (int)(Math.sqrt((RADIUS * RADIUS)));
     public static final int MOVEMENT = 3;
 
     private ShapeRenderer shape;
@@ -26,9 +26,11 @@ public class Bullet {
         this.position = position;
         this.isTop = isTop;
         bounds = new Rectangle();
-        bounds.setPosition(position.cpy().add(-INNER_RADIUS / 2, -INNER_RADIUS / 2));
         bounds.setSize(INNER_RADIUS, INNER_RADIUS);
+        bounds.setCenter(position.cpy());
         shape = new ShapeRenderer();
+        System.out.println(RADIUS);
+        System.out.println(INNER_RADIUS);
     }
 
 
@@ -47,11 +49,11 @@ public class Bullet {
 
     private void moveDown(){
         position.y -= MOVEMENT;
-        bounds.setPosition(position);
+        bounds.setCenter(position);
     }
     private void moveUp(){
         position.y += MOVEMENT;
-        bounds.setPosition(position);
+        bounds.setCenter(position);
     }
 
     public void render(Border border ,OrthographicCamera camera){
@@ -75,6 +77,8 @@ public class Bullet {
             }
             shape.circle(position.x, position.y, RADIUS);
         }
+//        shape.setColor(Color.YELLOW);
+//        shape.rect(bounds.x, bounds.y, bounds.getWidth(), bounds.getHeight());
         shape.end();
     }
 
