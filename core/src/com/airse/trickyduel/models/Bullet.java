@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bullet {
     public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
-    public static final int INNER_RADIUS = (int)(Math.sqrt((RADIUS * RADIUS)));
+    public static final int INNER_RADIUS = (int)(Math.sqrt(2 * (RADIUS * RADIUS)));
     public static final int MOVEMENT = 3;
 
     private ShapeRenderer shape;
@@ -29,8 +29,6 @@ public class Bullet {
         bounds.setSize(INNER_RADIUS, INNER_RADIUS);
         bounds.setCenter(position.cpy());
         shape = new ShapeRenderer();
-        System.out.println(RADIUS);
-        System.out.println(INNER_RADIUS);
     }
 
 
@@ -88,5 +86,9 @@ public class Bullet {
 
     public Rectangle getBounds() {
         return bounds;
+    }
+
+    public Vector2 getPosition() {
+        return position;
     }
 }

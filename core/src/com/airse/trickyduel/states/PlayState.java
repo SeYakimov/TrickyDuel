@@ -19,8 +19,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class PlayState extends State implements InputProcessor {
+    private int playerSize;
 
-    //private OrthographicCamera camera;
     private Border border;
     private Player playerBottom, playerTop;
     private Array<Bullet> topBullets, bottomBullets;
@@ -41,7 +41,6 @@ public class PlayState extends State implements InputProcessor {
 
     private boolean topWon;
     private boolean bottomWon;
-    private int winner;
 
     private Vector2 lastTouch;
 
@@ -50,13 +49,18 @@ public class PlayState extends State implements InputProcessor {
 
         Gdx.input.setInputProcessor(this);
 
-        //camera = new OrthographicCamera();
-        camera.setToOrtho(false, 320, 480);
+//        camera.setToOrtho(false, 320, 480);
+        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
 
         camera.update();
+        playerSize = (int)(camera.viewportWidth / 10);
         border = new Border(Difficulty.NORMAL, camera);
-        playerTop = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.8f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), true);
-        playerBottom = new Player(new Vector2((int)(0.5f * Duel.WIDTH) - Player.PLAYER_WIDTH / 2, (int)(0.2f * Duel.HEIGHT) - Player.PLAYER_HEIGHT / 2), false);
+        playerTop = new Player(new Vector2((int)(camera.position.x - playerSize / 2),
+                (int)(camera.position.y + camera.viewportHeight * 0.25f + playerSize / 2)),
+                playerSize, playerSize, true);
+        playerBottom = new Player(new Vector2((int)(camera.position.x - playerSize / 2),
+                (int)(camera.position.y - camera.viewportHeight * 0.25f - 3 * playerSize / 2)),
+                playerSize, playerSize, false);
         shape = new ShapeRenderer();
         font = new BitmapFont();
         lastTouch = new Vector2();
@@ -75,8 +79,6 @@ public class PlayState extends State implements InputProcessor {
         topWon = false;
         bottomWon = false;
 
-        winner = 0;
-
         topBullets = new Array<Bullet>();
         bottomBullets = new Array<Bullet>();
 
@@ -89,8 +91,8 @@ public class PlayState extends State implements InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        camera.viewportWidth = 320;                 // Viewport of 30 units!
-        camera.viewportHeight = 320 * height / width; // Lets keep things in proportion.
+        camera.viewportWidth = 320;
+        camera.viewportHeight = camera.viewportWidth * height / width;
         camera.update();
     }
 
@@ -125,6 +127,9 @@ public class PlayState extends State implements InputProcessor {
                 border.moveDown();
                 topBullets.removeValue(top, true);
             }
+            if (top.getPosition().y < camera.position.y - camera.viewportHeight / 2 - top.RADIUS){
+                topBullets.removeValue(top, true);
+            }
         }
         for (Bullet bottom : bottomBullets) {
             bottom.update();
@@ -132,18 +137,21 @@ public class PlayState extends State implements InputProcessor {
                 border.moveUp();
                 bottomBullets.removeValue(bottom, true);
             }
+            if (bottom.getPosition().y > camera.position.y + camera.viewportHeight / 2){
+                bottomBullets.removeValue(bottom, true);
+            }
+        }
+        switch(border.isGameOver(camera)){
+            case -1:
+                bottomWon = true;
+                break;
+            case 1:
+                topWon = true;
+                break;
+            default:
+                break;
         }
 
-        if (border.isGameOver() != winner) {
-            winner = border.isGameOver();
-            if (winner == 1) topWon = true;
-            else if (winner == -1) bottomWon = true;
-        }
-
-
-
-//        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
-//        camera.position.y = playerTop.getPosition().y;
         camera.update();
 
     }
@@ -160,7 +168,7 @@ public class PlayState extends State implements InputProcessor {
         for (Bullet bottom : bottomBullets) {
             bottom.render(border, camera);
         }
-        if (winner != 0){
+        if (topWon || bottomWon){
             shape.begin(ShapeRenderer.ShapeType.Filled);
             shape.setColor(1, 1, 1, 0.1f);
             shape.rect(0, 0, Duel.WIDTH, Duel.HEIGHT);
@@ -171,9 +179,9 @@ public class PlayState extends State implements InputProcessor {
             font.draw(sb, s, 100, Duel.HEIGHT / 2);
             sb.end();
         }
-        sb.begin();
-        sb.draw(ball, camera.position.x - ball.getWidth() / 2, camera.position.y - ball.getHeight() / 2);
-        sb.end();
+//        sb.begin();
+//        sb.draw(ball, camera.position.x - ball.getWidth() / 2, camera.position.y - ball.getHeight() / 2);
+//        sb.end();
     }
 
     @Override
@@ -222,11 +230,11 @@ public class PlayState extends State implements InputProcessor {
                 break;
             // Bottom player shoots
             case Input.Keys.P:
-                bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.PLAYER_WIDTH / 2, playerBottom.PLAYER_HEIGHT), false));
+                bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.getSize().x / 2, playerBottom.getSize().y), false));
                 break;
             // Top player shoots
             case Input.Keys.SPACE:
-                topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.PLAYER_WIDTH / 2, playerTop.PLAYER_HEIGHT), true));
+                topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.getSize().x / 2, 0), true));
                 break;
             default:
                 break;

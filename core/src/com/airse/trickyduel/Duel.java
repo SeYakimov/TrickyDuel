@@ -14,10 +14,12 @@ public class Duel extends ApplicationAdapter {
 	public static final int PLAYER_HEIGHT = PLAYER_WIDTH;
 
     public static final String PURPLE = "651fff";
-    public static final String GREEN = "c6ff00";
-    public static final String CYAN = "18ffff";
+    public static final String LIME400 = "c6ff00";
+    public static final String CYAN = "00e5ff";
     public static final String ORANGE = "ff6e40";
-    public static final String TOP_COLOR = ORANGE;
+    public static final String RED = "ff1744";
+    public static final String GREEN400 = "00e676";
+    public static final String TOP_COLOR = RED;
     public static final String BOTTOM_COLOR = CYAN;
 
 	public static final String TITLE = "Tricky Duel";
