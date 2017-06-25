@@ -29,11 +29,11 @@ public class Duel extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		sb = new SpriteBatch();
-		gsm = new GameStateManager();
+        sb = new SpriteBatch();
+        gsm = new GameStateManager();
         Gdx.gl.glClearColor(0.35f, 0, 1, 1);
-		gsm.push(new PlayState(gsm));
-	}
+        gsm.push(new PlayState(gsm));
+    }
 	@Override
 	public void resize(int width, int height){
 		gsm.resize(width, height);

@@ -7,10 +7,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-/**
- * Created by qwert on 17.06.2017.
- */
-
 public class Player {
 //    public static final int PLAYER_WIDTH = (int)(0.1f * Duel.WIDTH);
 //    public static final int PLAYER_HEIGHT = PLAYER_WIDTH;

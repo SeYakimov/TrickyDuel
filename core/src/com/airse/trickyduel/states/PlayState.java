@@ -2,8 +2,10 @@ package com.airse.trickyduel.states;
 
 import com.airse.trickyduel.Difficulty;
 import com.airse.trickyduel.Duel;
+import com.airse.trickyduel.PerkType;
 import com.airse.trickyduel.models.Border;
 import com.airse.trickyduel.models.Bullet;
+import com.airse.trickyduel.models.Perk;
 import com.airse.trickyduel.models.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -18,17 +20,22 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.Random;
+
 public class PlayState extends State implements InputProcessor {
     private int playerSize;
+    private int i;
+    private Random rand;
 
     private Border border;
     private Player playerBottom, playerTop;
     private Array<Bullet> topBullets, bottomBullets;
+    private Array<Perk> topPerks, bottomPerks;
     private ShapeRenderer shape;
     private BitmapFont font;
     private String s;
 
-    private Texture ball;
+    private Perk perk1;
 
     private boolean UpKeyDown;
     private boolean DownKeyDown;
@@ -54,6 +61,9 @@ public class PlayState extends State implements InputProcessor {
 
         camera.update();
         playerSize = (int)(camera.viewportWidth / 10);
+
+        rand = new Random();
+
         border = new Border(Difficulty.NORMAL, camera);
         playerTop = new Player(new Vector2((int)(camera.position.x - playerSize / 2),
                 (int)(camera.position.y + camera.viewportHeight * 0.25f + playerSize / 2)),
@@ -65,7 +75,7 @@ public class PlayState extends State implements InputProcessor {
         font = new BitmapFont();
         lastTouch = new Vector2();
 
-        ball = new Texture("ball.png");
+//        perk1 = new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, false, playerSize);
 
         UpKeyDown = false;
         DownKeyDown = false;
@@ -82,6 +92,9 @@ public class PlayState extends State implements InputProcessor {
         topBullets = new Array<Bullet>();
         bottomBullets = new Array<Bullet>();
 
+        topPerks = new Array<Perk>();
+        bottomPerks = new Array<Perk>();
+
     }
 
     @Override
@@ -94,6 +107,8 @@ public class PlayState extends State implements InputProcessor {
         camera.viewportWidth = 320;
         camera.viewportHeight = camera.viewportWidth * height / width;
         camera.update();
+        System.out.println("x: " + camera.position.x);
+        System.out.println("y: " + camera.position.y);
     }
 
 
@@ -158,15 +173,20 @@ public class PlayState extends State implements InputProcessor {
 
     @Override
     public void render(SpriteBatch sb) {
+        shape.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
         border.render(camera);
         playerTop.render(camera);
         playerBottom.render(camera);
+//        perk1.render(camera, sb);
         for (Bullet top : topBullets) {
             top.render(border, camera);
         }
         for (Bullet bottom : bottomBullets) {
             bottom.render(border, camera);
+        }
+        for (Perk perk : bottomPerks) {
+            perk.render(camera, sb);
         }
         if (topWon || bottomWon){
             shape.begin(ShapeRenderer.ShapeType.Filled);
@@ -179,9 +199,7 @@ public class PlayState extends State implements InputProcessor {
             font.draw(sb, s, 100, Duel.HEIGHT / 2);
             sb.end();
         }
-//        sb.begin();
-//        sb.draw(ball, camera.position.x - ball.getWidth() / 2, camera.position.y - ball.getHeight() / 2);
-//        sb.end();
+
     }
 
     @Override
@@ -194,6 +212,9 @@ public class PlayState extends State implements InputProcessor {
         }
         for (Bullet bottom : bottomBullets) {
             bottom.dispose();
+        }
+        for (Perk perk : bottomPerks) {
+            perk.dispose();
         }
     }
 
@@ -235,6 +256,12 @@ public class PlayState extends State implements InputProcessor {
             // Top player shoots
             case Input.Keys.SPACE:
                 topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.getSize().x / 2, 0), true));
+                break;
+            case Input.Keys.O:
+                bottomPerks.add(new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, false, playerSize, border));
+                break;
+            case Input.Keys.I:
+                bottomPerks.add(new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, true, playerSize, border));
                 break;
             default:
                 break;
