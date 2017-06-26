@@ -26,7 +26,7 @@ public class Player {
 
     public Player(Vector2 position, int width, int height, boolean isTop) {
         size = new Vector2(width, height);
-        speed = (int)(width / 5);
+        speed = (int)(width / 8);
 //        this.position = position;
         shape = new ShapeRenderer();
         this.isTop = isTop;

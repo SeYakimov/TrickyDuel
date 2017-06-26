@@ -11,16 +11,17 @@ public class Border {
 
     public static final int BORDER_WIDTH = Duel.WIDTH;
     public static final int BORDER_HEIGHT = Duel.HEIGHT;
-    public static final int MOVEMENT = 24;
+    private int movement;
 
     private Vector2 position;
     private Difficulty difficulty;
     private ShapeRenderer shape;
 
-    public Border(Difficulty difficulty, OrthographicCamera camera) {
+    public Border(Difficulty difficulty, OrthographicCamera camera, int playerSize) {
         this.difficulty = difficulty;
         setPosition(camera);
         shape = new ShapeRenderer();
+        movement = playerSize;
 
     }
 
@@ -44,10 +45,10 @@ public class Border {
     }
 
     public void moveUp(){
-        position.y += MOVEMENT;
+        position.y += movement;
     }
     public void moveDown(){
-        position.y -= MOVEMENT;
+        position.y -= movement;
     }
 
     public void update(float dt){
@@ -55,10 +56,10 @@ public class Border {
     }
 
     public int isGameOver(OrthographicCamera camera){
-        if (position.y > camera.position.y + camera.viewportHeight / 2 - camera.viewportWidth / 10){
+        if (position.y > camera.position.y + camera.viewportHeight / 2 - movement){
             return 1;
         }
-        else if (position.y < camera.position.y - camera.viewportHeight / 2 + camera.viewportWidth / 10){
+        else if (position.y < camera.position.y - camera.viewportHeight / 2 + movement){
             return -1;
         }
         else return 0;

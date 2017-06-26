@@ -8,10 +8,17 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class Bullet {
-    public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
-    public static final int INNER_RADIUS = (int)(Math.sqrt(2 * (RADIUS * RADIUS)));
-    public static final int MOVEMENT = 3;
+//    public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
+//    public static final int INNER_RADIUS = (int)(Math.sqrt(2 * (RADIUS * RADIUS)));
+//    public static final int MOVEMENT = 3;
+    private int innerRadius;
+    private int movement;
 
+    public int getRadius() {
+        return radius;
+    }
+
+    private int radius;
     private ShapeRenderer shape;
     private Vector2 position;
     private Rectangle bounds;
@@ -22,11 +29,14 @@ public class Bullet {
 
     private boolean isTop;
 
-    public Bullet(Vector2 position, boolean isTop) {
+    public Bullet(Vector2 position, boolean isTop, int playerSize) {
+        radius = playerSize / 5;
+        movement = radius / 2;
+        innerRadius = (int)(Math.sqrt(2 * (radius * radius)));
         this.position = position;
         this.isTop = isTop;
         bounds = new Rectangle();
-        bounds.setSize(INNER_RADIUS, INNER_RADIUS);
+        bounds.setSize(innerRadius, innerRadius);
         bounds.setCenter(position.cpy());
         shape = new ShapeRenderer();
     }
@@ -46,11 +56,11 @@ public class Bullet {
     }
 
     private void moveDown(){
-        position.y -= MOVEMENT;
+        position.y -= movement;
         bounds.setCenter(position);
     }
     private void moveUp(){
-        position.y += MOVEMENT;
+        position.y += movement;
         bounds.setCenter(position);
     }
 
@@ -64,7 +74,7 @@ public class Bullet {
             else {
                 shape.setColor(Color.valueOf(Duel.TOP_COLOR));
             }
-            shape.circle(position.x, position.y, RADIUS);
+            shape.circle(position.x, position.y, radius);
         }
         else{
             if (position.y > border.getPosition().y) {
@@ -73,7 +83,7 @@ public class Bullet {
             else {
                 shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
             }
-            shape.circle(position.x, position.y, RADIUS);
+            shape.circle(position.x, position.y, radius);
         }
 //        shape.setColor(Color.YELLOW);
 //        shape.rect(bounds.x, bounds.y, bounds.getWidth(), bounds.getHeight());
