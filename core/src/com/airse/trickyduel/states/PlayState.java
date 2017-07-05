@@ -5,7 +5,7 @@ import com.airse.trickyduel.Duel;
 import com.airse.trickyduel.PerkType;
 import com.airse.trickyduel.State;
 import com.airse.trickyduel.models.Border;
-import com.airse.trickyduel.models.Bullet;
+import com.airse.trickyduel.models.BulletManager;
 import com.airse.trickyduel.models.Perk;
 import com.airse.trickyduel.models.Player;
 import com.badlogic.gdx.Gdx;
@@ -24,11 +24,9 @@ import java.util.Random;
 
 public class PlayState extends com.airse.trickyduel.states.State implements InputProcessor {
     private class TouchInfo {
-//        public float X = 0;
-//        public float Y = 0;
-        public Vector2 pos = new Vector2();
-        public boolean touched = false;
-        public State state = State.NONE;
+        Vector2 pos = new Vector2();
+        boolean touched = false;
+        State state = State.NONE;
     }
     private boolean bottomLeftTouched;
     private boolean topRightTouched;
@@ -45,8 +43,9 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     private Border border;
     private Player playerBottom, playerTop;
 
-    private Array<Bullet> topBullets, bottomBullets;
     private Array<Perk> topPerks, bottomPerks;
+
+    private BulletManager bulletManager;
 
     private ShapeRenderer shape;
     private BitmapFont font;
@@ -64,8 +63,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
     private boolean topWon;
     private boolean bottomWon;
-
-//    private Vector2 lastTouch;
 
     private boolean topCanShoot;
     private boolean bottomCanShoot;
@@ -106,8 +103,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         topWon = false;
         bottomWon = false;
 
-        topBullets = new Array<Bullet>();
-        bottomBullets = new Array<Bullet>();
+        bulletManager = new BulletManager(playerSize, 30);
 
         topPerks = new Array<Perk>();
         bottomPerks = new Array<Perk>();
@@ -146,16 +142,10 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
         for (int i = 0; i < touches.size(); i++){
             TouchInfo info = touches.get(i);
-            float angle = 0;
-            float dx = 0;
-            float dy = 0;
+            float dx;
+            float dy;
             switch (info.state){
                 case TOP_STICK:
-//                    if (topStickOrigin != null) {
-//                        angle = (float) (Math.atan2(-(topStickOrigin.y - info.pos.y), -(topStickOrigin.x - info.pos.x)) / Math.PI * 180);
-//                        if (angle < 0) angle += 360;
-//                    }
-//                    movePlayers(playerTop, angle);
                     if (info.pos.dst(topStickOrigin) > playerSize){
                         info.pos = topStickOrigin.cpy().mulAdd(info.pos.cpy().sub(topStickOrigin), playerSize / (info.pos.dst(topStickOrigin)));
                     }
@@ -164,11 +154,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                     playerTop.move(dx, dy);
                     break;
                 case BOTTOM_STICK:
-//                    if (bottomStickOrigin != null) {
-//                        angle = (float) (Math.atan2(-(bottomStickOrigin.y - info.pos.y), -(bottomStickOrigin.x - info.pos.x)) / Math.PI * 180);
-//                        if (angle < 0) angle += 360;
-//                    }
-//                    movePlayers(playerBottom, angle);
 
                     if (info.pos.dst(bottomStickOrigin) > playerSize){
                         info.pos = bottomStickOrigin.cpy().mulAdd(info.pos.cpy().sub(bottomStickOrigin), playerSize / (info.pos.dst(bottomStickOrigin)));
@@ -179,13 +164,13 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                     break;
                 case TOP_SHOOT:
                     if (topCanShoot){
-                        topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.getSize().x / 2, 0), true, playerSize));
+                        bulletManager.addTopBullet(playerTop, playerBottom);
                         topCanShoot = false;
                     }
                     break;
                 case BOTTOM_SHOOT:
                     if (bottomCanShoot){
-                        bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.getSize().x / 2, playerBottom.getSize().y), false, playerSize));
+                        bulletManager.addBottomBullet(playerTop, playerBottom);
                         bottomCanShoot = false;
                     }
                     break;
@@ -206,36 +191,8 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         playerTop.update(border, camera);
         playerBottom.update(border, camera);
 
-        for (Bullet top : topBullets) {
-            for (Bullet bottom : bottomBullets) {
-                if (top.isCollides(bottom.getBounds()))
-                {
-                    topBullets.removeValue(top, true);
-                    bottomBullets.removeValue(bottom, true);
-                }
-            }
-        }
+        bulletManager.update(camera, playerTop, playerBottom, border);
 
-        for (Bullet top : topBullets) {
-            top.update();
-            if (top.isCollides(playerBottom.getBounds())){
-                border.moveDown();
-                topBullets.removeValue(top, true);
-            }
-            if (top.getPosition().y < camera.position.y - camera.viewportHeight / 2 - top.getRadius()){
-                topBullets.removeValue(top, true);
-            }
-        }
-        for (Bullet bottom : bottomBullets) {
-            bottom.update();
-            if (bottom.isCollides(playerTop.getBounds())){
-                border.moveUp();
-                bottomBullets.removeValue(bottom, true);
-            }
-            if (bottom.getPosition().y > camera.position.y + camera.viewportHeight / 2){
-                bottomBullets.removeValue(bottom, true);
-            }
-        }
         switch(border.isGameOver(camera)){
             case -1:
                 bottomWon = true;
@@ -258,12 +215,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         border.render(camera);
         playerTop.render(camera);
         playerBottom.render(camera);
-        for (Bullet top : topBullets) {
-            top.render(border, camera);
-        }
-        for (Bullet bottom : bottomBullets) {
-            bottom.render(border, camera);
-        }
+        bulletManager.render(camera, border);
         for (Perk perk : bottomPerks) {
             perk.render(camera, sb);
         }
@@ -312,12 +264,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         border.dispose();
         playerTop.dispose();
         playerBottom.dispose();
-        for (Bullet top : topBullets) {
-            top.dispose();
-        }
-        for (Bullet bottom : bottomBullets) {
-            bottom.dispose();
-        }
+        bulletManager.dispose();
         for (Perk perk : bottomPerks) {
             perk.dispose();
         }
@@ -328,19 +275,15 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         switch (keycode){
             case Input.Keys.UP:
                 if (!UpKeyDown) UpKeyDown = true;
-                //playerBottom.moveUp();
                 break;
             case Input.Keys.DOWN:
                 if (!DownKeyDown) DownKeyDown = true;
-                //playerBottom.moveDown();
                 break;
             case Input.Keys.LEFT:
                 if (!LeftKeyDown) LeftKeyDown = true;
-                //playerBottom.moveLeft();
                 break;
             case Input.Keys.RIGHT:
                 if (!RightKeyDown) RightKeyDown = true;
-                //playerBottom.moveRight();
                 break;
             case Input.Keys.W:
                 if (!WKeyDown) WKeyDown = true;
@@ -356,11 +299,11 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                 break;
             // Bottom player shoots
             case Input.Keys.P:
-                bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.getSize().x / 2, playerBottom.getSize().y), false, playerSize));
+                bulletManager.addBottomBullet(playerTop, playerBottom);
                 break;
             // Top player shoots
             case Input.Keys.SPACE:
-                topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.getSize().x / 2, 0), true, playerSize));
+                bulletManager.addTopBullet(playerTop, playerBottom);
                 break;
             case Input.Keys.O:
                 bottomPerks.add(new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, false, playerSize, border));
@@ -503,40 +446,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         return false;
     }
 
-    private static boolean isBetween(float x, float lower, float upper) {
-        return lower <= x && x <= upper;
-    }
-
-    private void movePlayers(Player player, float angle){
-        if (isBetween(angle, 22.5f, 67.5f)){
-            player.moveRight();
-            player.moveUp();
-        }
-        else if (isBetween(angle, 67.5f, 112.5f)){
-            player.moveUp();
-        }
-        else if (isBetween(angle, 112.5f, 157.5f)){
-            player.moveUp();
-            player.moveLeft();
-        }
-        else if (isBetween(angle, 157.5f, 202.5f)){
-            player.moveLeft();
-        }
-        else if (isBetween(angle, 202.5f, 247.5f)){
-            player.moveLeft();
-            player.moveDown();
-        }
-        else if (isBetween(angle, 247.5f, 292.5f)){
-            player.moveDown();
-        }
-        else if (isBetween(angle, 292.5f, 337.5f)){
-            player.moveDown();
-            player.moveRight();
-        }
-        else {
-            player.moveRight();
-        }
-    }
 
 
 }
