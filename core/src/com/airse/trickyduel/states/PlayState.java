@@ -147,20 +147,35 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         for (int i = 0; i < touches.size(); i++){
             TouchInfo info = touches.get(i);
             float angle = 0;
+            float dx = 0;
+            float dy = 0;
             switch (info.state){
                 case TOP_STICK:
-                    if (topStickOrigin != null) {
-                        angle = (float) (Math.atan2(-(topStickOrigin.y - info.pos.y), -(topStickOrigin.x - info.pos.x)) / Math.PI * 180);
-                        if (angle < 0) angle += 360;
+//                    if (topStickOrigin != null) {
+//                        angle = (float) (Math.atan2(-(topStickOrigin.y - info.pos.y), -(topStickOrigin.x - info.pos.x)) / Math.PI * 180);
+//                        if (angle < 0) angle += 360;
+//                    }
+//                    movePlayers(playerTop, angle);
+                    if (info.pos.dst(topStickOrigin) > playerSize){
+                        info.pos = topStickOrigin.cpy().mulAdd(info.pos.cpy().sub(topStickOrigin), playerSize / (info.pos.dst(topStickOrigin)));
                     }
-                    movePlayers(playerTop, angle);
+                    dx = info.pos.x - topStickOrigin.x;
+                    dy = info.pos.y - topStickOrigin.y;
+                    playerTop.move(dx, dy);
                     break;
                 case BOTTOM_STICK:
-                    if (bottomStickOrigin != null) {
-                        angle = (float) (Math.atan2(-(bottomStickOrigin.y - info.pos.y), -(bottomStickOrigin.x - info.pos.x)) / Math.PI * 180);
-                        if (angle < 0) angle += 360;
+//                    if (bottomStickOrigin != null) {
+//                        angle = (float) (Math.atan2(-(bottomStickOrigin.y - info.pos.y), -(bottomStickOrigin.x - info.pos.x)) / Math.PI * 180);
+//                        if (angle < 0) angle += 360;
+//                    }
+//                    movePlayers(playerBottom, angle);
+
+                    if (info.pos.dst(bottomStickOrigin) > playerSize){
+                        info.pos = bottomStickOrigin.cpy().mulAdd(info.pos.cpy().sub(bottomStickOrigin), playerSize / (info.pos.dst(bottomStickOrigin)));
                     }
-                    movePlayers(playerBottom, angle);
+                    dx = info.pos.x - bottomStickOrigin.x;
+                    dy = info.pos.y - bottomStickOrigin.y;
+                    playerBottom.move(dx, dy);
                     break;
                 case TOP_SHOOT:
                     if (topCanShoot){

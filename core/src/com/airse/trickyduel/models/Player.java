@@ -66,6 +66,10 @@ public class Player {
         bounds.y -= speed;
 
     }
+    public void move(float x, float y){
+        bounds.x += (x / 8);
+        bounds.y += (y / 8);
+    }
     public void update(Border border, OrthographicCamera camera){
         if (isTop){
             if (bounds.y < border.getPosition().y) bounds.y = border.getPosition().y;

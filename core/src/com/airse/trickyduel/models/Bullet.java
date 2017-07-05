@@ -29,8 +29,8 @@ public class Bullet {
 
     private boolean isTop;
 
-    public Bullet(Vector2 position, boolean isTop, int playerSize) {
-        radius = playerSize / 5;
+    public Bullet(Vector2 position, boolean isTop, int bulletSize) {
+        radius = bulletSize / 5;
         movement = radius / 2;
         innerRadius = (int)(Math.sqrt(2 * (radius * radius)));
         this.position = position;
