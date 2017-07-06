@@ -17,19 +17,28 @@ public class Player {
 
 
     private boolean isTop;
-//    private Vector2 position;
+    private Vector2 position;
     private Rectangle bounds;
     private int bulletsNum;
     private int bulletsLimit;
 
     private ShapeRenderer shape;
 
-    public Player(Vector2 position, int width, int height, boolean isTop) {
+    public Player(OrthographicCamera camera, int width, int height, boolean isTop) {
+        this.isTop = isTop;
+        if (isTop){
+            position = new Vector2((int)(camera.viewportWidth / 2 - width / 2),
+                    (int)(camera.viewportHeight * 11 / 12 - height / 2));
+        }
+        else{
+            position = new Vector2((int)(camera.viewportWidth / 2 - width / 2),
+                    (int)(camera.viewportHeight / 12 - height / 2));
+        }
+
         size = new Vector2(width, height);
         speed = (int)(width / 8);
 //        this.position = position;
         shape = new ShapeRenderer();
-        this.isTop = isTop;
         bounds = new Rectangle();
         bounds.setPosition(position);
         bounds.setSize(width, height);
@@ -72,7 +81,7 @@ public class Player {
     }
     public void update(Border border, OrthographicCamera camera){
         if (isTop){
-            if (bounds.y < border.getPosition().y) bounds.y = border.getPosition().y;
+            if (bounds.y < border.getPosition().y + border.getBorderHeight()) bounds.y = border.getPosition().y + border.getBorderHeight();
             if (bounds.y > camera.position.y + camera.viewportHeight / 2 - size.y)
                 bounds.y = camera.position.y + camera.viewportHeight / 2 - size.y;
         }
@@ -103,6 +112,9 @@ public class Player {
         }
 
         shape.rect(bounds.x, bounds.y, size.x, size.y);
+
+        shape.setColor(Color.WHITE);
+        shape.rect(bounds.x + size.x / 3, bounds.y + size.y / 3, size.x / 3, size.y / 3);
         shape.end();
     }
 

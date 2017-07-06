@@ -15,12 +15,16 @@ public class Duel extends ApplicationAdapter {
 
     public static final String PURPLE = "651fff";
     public static final String LIME400 = "c6ff00";
-    public static final String CYAN = "00e5ff";
+    public static final String CYAN400 = "00e5ff";
+    public static final String CYAN200 = "18ffff";
+    public static final String CYAN100 = "84ffff";
     public static final String ORANGE = "ff6e40";
-    public static final String RED = "ff1744";
+    public static final String RED400 = "ff1744";
+    public static final String RED200 = "ff5252";
+    public static final String RED100 = "ff8a80";
     public static final String GREEN400 = "00e676";
-    public static final String TOP_COLOR = RED;
-    public static final String BOTTOM_COLOR = CYAN;
+    public static final String TOP_COLOR = RED400;
+    public static final String BOTTOM_COLOR = CYAN400;
 
 	public static final String TITLE = "Tricky Duel";
 

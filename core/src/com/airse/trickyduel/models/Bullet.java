@@ -29,9 +29,9 @@ public class Bullet {
 
     private boolean isTop;
 
-    public Bullet(Vector2 position, boolean isTop, int bulletSize) {
-        radius = bulletSize / 5;
-        movement = radius / 2;
+    public Bullet(Vector2 position, boolean isTop, int bulletRadius) {
+        radius = bulletRadius / 6;
+        movement = bulletRadius / 10;
         innerRadius = (int)(Math.sqrt(2 * (radius * radius)));
         this.position = position;
         this.isTop = isTop;
@@ -68,7 +68,7 @@ public class Bullet {
         shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop){
-            if (position.y < border.getPosition().y) {
+            if (position.y < border.getPosition().y + border.getBorderHeight()) {
                 shape.setColor(Color.BLACK);
             }
             else {

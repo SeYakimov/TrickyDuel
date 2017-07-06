@@ -2,21 +2,24 @@ package com.airse.trickyduel.states;
 
 import com.airse.trickyduel.Difficulty;
 import com.airse.trickyduel.Duel;
-import com.airse.trickyduel.PerkType;
 import com.airse.trickyduel.State;
 import com.airse.trickyduel.models.Border;
 import com.airse.trickyduel.models.BulletManager;
-import com.airse.trickyduel.models.Perk;
+import com.airse.trickyduel.models.PerkManager;
 import com.airse.trickyduel.models.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,14 +46,15 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     private Border border;
     private Player playerBottom, playerTop;
 
-    private Array<Perk> topPerks, bottomPerks;
 
     private BulletManager bulletManager;
+    private PerkManager perkManager;
 
     private ShapeRenderer shape;
-    private BitmapFont font;
+    private BitmapFont winner;
+    private GlyphLayout glyphLayout;
     private String s;
-    private String message;
+    private Matrix4 mx4Font, oldMatrix;
 
     private boolean UpKeyDown;
     private boolean DownKeyDown;
@@ -77,19 +81,27 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 //        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
 
         camera.update();
-        playerSize = (int)(camera.viewportHeight / 16);
+        playerSize = (int)(camera.viewportHeight / 15);
 
         rand = new Random();
 
         border = new Border(Difficulty.NORMAL, camera, playerSize);
-        playerTop = new Player(new Vector2((int)(camera.position.x - playerSize / 2),
-                (int)(camera.position.y + camera.viewportHeight * 0.25f + playerSize / 2)),
-                playerSize, playerSize, true);
-        playerBottom = new Player(new Vector2((int)(camera.position.x - playerSize / 2),
-                (int)(camera.position.y - camera.viewportHeight * 0.25f - 3 * playerSize / 2)),
-                playerSize, playerSize, false);
+        playerTop = new Player(camera, playerSize, playerSize, true);
+        playerBottom = new Player(camera, playerSize, playerSize, false);
+
         shape = new ShapeRenderer();
-        font = new BitmapFont();
+//        winner = new BitmapFont();
+        FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(
+                Gdx.files.internal("Britannic.ttf")
+        );
+        FreeTypeFontGenerator.FreeTypeFontParameter freeTypeFontParameter =
+                new FreeTypeFontGenerator.FreeTypeFontParameter();
+        freeTypeFontParameter.size = (int)(playerSize);
+        fontGenerator.generateData(freeTypeFontParameter);
+        winner = fontGenerator.generateFont(freeTypeFontParameter);
+        glyphLayout = new GlyphLayout();
+        mx4Font = new Matrix4();
+        oldMatrix = new Matrix4();
 
         UpKeyDown = false;
         DownKeyDown = false;
@@ -103,12 +115,10 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         topWon = false;
         bottomWon = false;
 
-        bulletManager = new BulletManager(playerSize, 30);
+        bulletManager = new BulletManager(playerSize, 20);
+        perkManager = new PerkManager(playerSize);
 
-        topPerks = new Array<Perk>();
-        bottomPerks = new Array<Perk>();
-        maxTouches = 4;
-
+        maxTouches = 10;
         touches = new HashMap<Integer,TouchInfo>();
         for(int i = 0; i < 10; i++){
             touches.put(i, new TouchInfo());
@@ -118,6 +128,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
         bottomCanShoot = true;
         topCanShoot = true;
+//        Gdx.gl.glLineWidth(playerSize / 2);
     }
 
     @Override
@@ -135,6 +146,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         w = Gdx.graphics.getWidth();
         System.out.println("w: " + w);
         System.out.println("h: " + h);
+        mx4Font.setToRotation(new Vector3(camera.position.x, camera.position.y, 0), 180);
     }
 
     @Override
@@ -194,10 +206,10 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         bulletManager.update(camera, playerTop, playerBottom, border);
 
         switch(border.isGameOver(camera)){
-            case -1:
+            case 1:
                 bottomWon = true;
                 break;
-            case 1:
+            case -1:
                 topWon = true;
                 break;
             default:
@@ -212,62 +224,106 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     public void render(SpriteBatch sb) {
         shape.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
-        border.render(camera);
+        border.render(camera, bulletManager);
         playerTop.render(camera);
         playerBottom.render(camera);
         bulletManager.render(camera, border);
-        for (Perk perk : bottomPerks) {
-            perk.render(camera, sb);
-        }
         if (topWon || bottomWon){
+
             shape.begin(ShapeRenderer.ShapeType.Filled);
-            shape.setColor(1, 1, 1, 0.1f);
-            shape.rect(0, 0, w, h);
-            shape.end();
-            sb.begin();
-            if (topWon) s = "Red won!";
-            else if (bottomWon) s = "Cyan won!";
-            font.draw(sb, s, 100, Duel.HEIGHT / 2);
-            sb.end();
-        }
-        sb.begin();
-
-        message = "";
-        for(int i = 0; i < maxTouches; i++){
-            if(touches.get(i).touched){
-                message += "Finger: " + Integer.toString(i) + " touch at: " +
-                        Float.toString(touches.get(i).pos.x) +
-                        ", " +
-                        Float.toString(touches.get(i).pos.y) +
-                        "\n";
-                x = touches.get(i).pos.x;
-                y = touches.get(i).pos.y;
-
+            if (bottomWon){
+                shape.setColor(Color.valueOf(Duel.CYAN100));
+                shape.rect(0, 0, w, h);
+                shape.end();
+                playerBottom.render(camera);
             }
-            font.draw(sb, message, x, y);
+            else {
+                shape.setColor(Color.valueOf(Duel.RED100));
+                shape.rect(0, 0, w, h);
+                shape.end();
+                playerTop.render(camera);
+            }
+
+            if (topWon){
+                printText(sb, camera.position.x, camera.position.y, 180, "Red won!", Color.valueOf(Duel.RED400));
+            }
+            else {
+                printText(sb, camera.position.x, camera.position.y, 0, "Cyan won!", Color.valueOf(Duel.CYAN400));
+            }
+
+            if (Gdx.input.justTouched()){
+                gsm.push(new PlayState(gsm));
+            }
         }
-        sb.end();
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA,GL20.GL_ONE_MINUS_SRC_ALPHA);
         if (topStickOrigin != null) {
-            shape.begin(ShapeRenderer.ShapeType.Line);
+            shape.begin(ShapeRenderer.ShapeType.Filled);
+            shape.setColor(1, 1, 1, 0.5f);
             shape.circle(topStickOrigin.x, topStickOrigin.y, playerSize);
             shape.end();
         }
         if (bottomStickOrigin != null) {
-            shape.begin(ShapeRenderer.ShapeType.Line);
+            shape.begin(ShapeRenderer.ShapeType.Filled);
+            shape.setColor(1, 1, 1, 0.5f);
             shape.circle(bottomStickOrigin.x, bottomStickOrigin.y, playerSize);
             shape.end();
         }
-    }
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+        for(int i = 0; i < maxTouches; i++){
+            if(touches.get(i).state == State.BOTTOM_STICK){
+                x = touches.get(i).pos.x;
+                y = touches.get(i).pos.y;
+                shape.begin(ShapeRenderer.ShapeType.Filled);
+                shape.setColor(Color.WHITE);
+                shape.circle(x, y, playerSize / 2);
+                shape.setColor(Color.valueOf(Duel.CYAN400));
+                shape.circle(x, y, playerSize / 4);
+                shape.end();
 
+            }
+            else if(touches.get(i).state == State.TOP_STICK){
+                x = touches.get(i).pos.x;
+                y = touches.get(i).pos.y;
+                shape.begin(ShapeRenderer.ShapeType.Filled);
+                shape.setColor(Color.WHITE);
+                shape.circle(x, y, playerSize / 2);
+                shape.setColor(Color.valueOf(Duel.RED400));
+                shape.circle(x, y, playerSize / 4);
+                shape.end();
+            }
+        }
+    }
+    public void printText(SpriteBatch sb, float posX, float posY, float angle, String text, Color color)
+    {
+        Matrix4 oldTransformMatrix = sb.getTransformMatrix().cpy();
+
+        Matrix4 mx4Font = new Matrix4();
+        mx4Font.rotate(new Vector3(0, 0, 1), angle);
+        mx4Font.trn(posX, posY, 0);
+        sb.setTransformMatrix(mx4Font);
+
+        sb.begin();
+        s = text;
+        winner.setColor(color);
+        glyphLayout.setText(winner,s);
+        float winnerTextWidth = glyphLayout.width;
+        float winnerTextHeight = glyphLayout.height;
+        winner.draw(sb, glyphLayout, - (winnerTextWidth / 2), winnerTextHeight / 2);
+        sb.end();
+
+        sb.setTransformMatrix(oldTransformMatrix);
+    }
     @Override
     public void dispose() {
         border.dispose();
         playerTop.dispose();
         playerBottom.dispose();
         bulletManager.dispose();
-        for (Perk perk : bottomPerks) {
-            perk.dispose();
-        }
+        perkManager.dispose();
+        shape.dispose();
+        winner.dispose();
+
     }
 
     @Override
@@ -306,10 +362,10 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                 bulletManager.addTopBullet(playerTop, playerBottom);
                 break;
             case Input.Keys.O:
-                bottomPerks.add(new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, false, playerSize, border));
+                // TODO Show top perk
                 break;
             case Input.Keys.I:
-                bottomPerks.add(new Perk(new Texture("red_bullet.png"), camera, PerkType.YOU_BULLETS, true, playerSize, border));
+                // TODO Show bottom perk
                 break;
             default:
                 break;
@@ -445,7 +501,4 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     public boolean scrolled(int amount) {
         return false;
     }
-
-
-
 }
