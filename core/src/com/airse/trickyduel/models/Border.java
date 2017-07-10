@@ -7,15 +7,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-
-import java.lang.reflect.Array;
 
 public class Border {
 
-    public static final int BORDER_WIDTH = Duel.WIDTH;
-    public static final int BORDER_HEIGHT = Duel.HEIGHT;
     private int movement;
 
     private Vector2 position;
@@ -93,10 +88,10 @@ public class Border {
 
     public void render(OrthographicCamera camera, BulletManager bulletManager){
         shape.setProjectionMatrix(camera.combined);
+
         shape.begin(ShapeRenderer.ShapeType.Filled);
         shape.setColor(Color.valueOf(Duel.TOP_COLOR));
-        shape.rect(camera.position.x - camera.viewportWidth / 2, camera.position.y - camera.viewportHeight / 2,
-                   camera.viewportWidth, camera.viewportHeight);
+        shape.rect(camera.position.x - camera.viewportWidth / 2, camera.position.y - camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
         shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
         shape.rect(camera.position.x - camera.viewportWidth / 2, position.y, camera.viewportWidth, camera.viewportHeight);
         shape.end();
@@ -126,7 +121,7 @@ public class Border {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA,GL20.GL_ONE_MINUS_SRC_ALPHA);
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
-        shape.setColor(0, 0, 0, 0.2f);
+        shape.setColor(0, 0, 0, 0.1f);
         for (int i = 0; i < shadowPos.length; i++){
             shape.rect(shadowPos[i].x, shadowPos[i].y, shadowSize.x, shadowSize.y);
         }

@@ -2,7 +2,6 @@ package com.airse.trickyduel.models;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Timer;
 
 public class BulletManager {
 
@@ -11,7 +10,7 @@ public class BulletManager {
     private int bulletNumTop;
     private int bulletNumBottom;
     private int bulletRadius;
-    private long startTime;
+    private long startTimeTop, startTimeBottom;
 
     public BulletManager(int bulletRadius, int bulletMaxNum) {
         this.bulletRadius = bulletRadius;
@@ -20,16 +19,17 @@ public class BulletManager {
         bulletNumBottom = bulletMaxNum;
         topBullets = new Array<Bullet>();
         bottomBullets = new Array<Bullet>();
-        startTime = System.currentTimeMillis();
+        startTimeTop = System.currentTimeMillis();
+        startTimeBottom = System.currentTimeMillis();
     }
 
-    public void addTopBullet(Player playerTop, Player playerBottom){
+    public void addTopBullet(Player playerTop){
         if (bulletNumTop > 0){
             topBullets.add(new Bullet(playerTop.getPosition().cpy().add(playerTop.getSize().x / 2, 0), true, bulletRadius));
             bulletNumTop--;
         }
     }
-    public void addBottomBullet(Player playerTop, Player playerBottom){
+    public void addBottomBullet(Player playerBottom){
         if (bulletNumBottom > 0){
             bottomBullets.add(new Bullet(playerBottom.getPosition().cpy().add(playerBottom.getSize().x / 2, playerBottom.getSize().y), false, bulletRadius));
             bulletNumBottom--;
@@ -65,7 +65,7 @@ public class BulletManager {
                 border.moveDown();
                 topBullets.removeValue(top, true);
             }
-            if (top.getPosition().y < camera.position.y - camera.viewportHeight / 2 - top.getRadius()){
+            if (top.getBounds().y < -2 * top.getRadius()){
                 topBullets.removeValue(top, true);
             }
         }
@@ -75,19 +75,22 @@ public class BulletManager {
                 border.moveUp();
                 bottomBullets.removeValue(bottom, true);
             }
-            if (bottom.getPosition().y > camera.position.y + camera.viewportHeight / 2){
+            if (bottom.getBounds().y > camera.viewportHeight){
                 bottomBullets.removeValue(bottom, true);
             }
         }
 
-        if (System.currentTimeMillis() - startTime > 1000){
+        if (System.currentTimeMillis() - startTimeTop > 1000){
             if (bulletNumTop < bulletMaxNum){
                 bulletNumTop++;
             }
+            startTimeTop = System.currentTimeMillis();
+        }
+        if (System.currentTimeMillis() - startTimeBottom > 1000){
             if (bulletNumBottom < bulletMaxNum){
                 bulletNumBottom++;
             }
-            startTime = System.currentTimeMillis();
+            startTimeBottom = System.currentTimeMillis();
         }
     }
 

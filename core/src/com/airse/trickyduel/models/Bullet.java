@@ -4,43 +4,37 @@ import com.airse.trickyduel.Duel;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class Bullet {
-//    public static final int RADIUS = (int)(Duel.WIDTH * 0.02f);
-//    public static final int INNER_RADIUS = (int)(Math.sqrt(2 * (RADIUS * RADIUS)));
-//    public static final int MOVEMENT = 3;
-    private int innerRadius;
-    private int movement;
 
-    public int getRadius() {
-        return radius;
-    }
+    private int movement;
 
     private int radius;
     private ShapeRenderer shape;
-    private Vector2 position;
-    private Rectangle bounds;
-
-    public boolean isTop() {
-        return isTop;
-    }
-
+//    private Vector2 position;
+    private Circle bounds;
     private boolean isTop;
 
     public Bullet(Vector2 position, boolean isTop, int bulletRadius) {
         radius = bulletRadius / 6;
         movement = bulletRadius / 10;
-        innerRadius = (int)(Math.sqrt(2 * (radius * radius)));
-        this.position = position;
+//        this.position = position;
         this.isTop = isTop;
-        bounds = new Rectangle();
-        bounds.setSize(innerRadius, innerRadius);
-        bounds.setCenter(position.cpy());
+        bounds = new Circle();
+        bounds.setRadius(radius);
+        bounds.setPosition(position.cpy().add(-radius, -radius));
         shape = new ShapeRenderer();
     }
 
+    public boolean isTop() {
+        return isTop;
+    }
+    public int getRadius() {
+        return radius;
+    }
 
     public void update(){
         if (isTop){
@@ -51,42 +45,59 @@ public class Bullet {
         }
     }
 
-    public boolean isCollides(Rectangle rect){
-        return bounds.overlaps(rect);
+    public boolean isCollides(Circle circle){
+        return bounds.overlaps(circle);
+    }
+    public boolean isCollides(Rectangle rect)
+    {
+        Vector2 circleDistance = new Vector2();
+        Vector2 rectCenter = new Vector2();
+        rect.getCenter(rectCenter);
+        float cornerDistance_sq;
+
+        circleDistance.x = Math.abs(getCenter().x - rectCenter.x);
+        circleDistance.y = Math.abs(getCenter().y - rectCenter.y);
+
+        if (circleDistance.x > (rect.width/2 + radius)) { return false; }
+        if (circleDistance.y > (rect.height/2 + radius)) { return false; }
+
+        if (circleDistance.x <= (rect.width/2)) { return true; }
+        if (circleDistance.y <= (rect.height/2)) { return true; }
+
+        cornerDistance_sq = (circleDistance.x - rect.width/2) * (circleDistance.x - rect.width/2) +
+                (circleDistance.y - rect.height/2) * (circleDistance.y - rect.height/2);
+
+        return (cornerDistance_sq <= (radius * radius));
     }
 
     private void moveDown(){
-        position.y -= movement;
-        bounds.setCenter(position);
+        bounds.y -= movement;
     }
     private void moveUp(){
-        position.y += movement;
-        bounds.setCenter(position);
+        bounds.y += movement;
     }
 
     public void render(Border border ,OrthographicCamera camera){
         shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop){
-            if (position.y < border.getPosition().y + border.getBorderHeight()) {
+            if (getCenter().y < border.getPosition().y + border.getBorderHeight()) {
                 shape.setColor(Color.BLACK);
             }
             else {
                 shape.setColor(Color.valueOf(Duel.TOP_COLOR));
             }
-            shape.circle(position.x, position.y, radius);
+            shape.circle(getCenter().x, getCenter().y, radius);
         }
         else{
-            if (position.y > border.getPosition().y) {
+            if (getCenter().y > border.getPosition().y) {
                 shape.setColor(Color.BLACK);
             }
             else {
                 shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
             }
-            shape.circle(position.x, position.y, radius);
+            shape.circle(getCenter().x, getCenter().y, radius);
         }
-//        shape.setColor(Color.YELLOW);
-//        shape.rect(bounds.x, bounds.y, bounds.getWidth(), bounds.getHeight());
         shape.end();
     }
 
@@ -94,11 +105,11 @@ public class Bullet {
         shape.dispose();
     }
 
-    public Rectangle getBounds() {
+    public Circle getBounds() {
         return bounds;
     }
 
-    public Vector2 getPosition() {
-        return position;
+    public Vector2 getCenter(){
+        return new Vector2(bounds.x + radius, bounds.y + radius);
     }
 }

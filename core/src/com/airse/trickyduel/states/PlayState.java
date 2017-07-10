@@ -39,13 +39,12 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     private Map<Integer,TouchInfo> touches;
 
     private int playerSize;
-    private int i, w, h, maxTouches;
+    private int w, h;
+    private int maxTouches;
     private float x, y;
-    private Random rand;
 
     private Border border;
     private Player playerBottom, playerTop;
-
 
     private BulletManager bulletManager;
     private PerkManager perkManager;
@@ -53,8 +52,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
     private ShapeRenderer shape;
     private BitmapFont winner;
     private GlyphLayout glyphLayout;
-    private String s;
-    private Matrix4 mx4Font, oldMatrix;
 
     private boolean UpKeyDown;
     private boolean DownKeyDown;
@@ -78,21 +75,17 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         h = Gdx.graphics.getHeight();
         w = Gdx.graphics.getWidth();
         camera.setToOrtho(false, w, h);
-//        camera.setToOrtho(false, Duel.WIDTH, Duel.HEIGHT);
 
         camera.update();
         playerSize = (int)(camera.viewportHeight / 15);
-
-        rand = new Random();
 
         border = new Border(Difficulty.NORMAL, camera, playerSize);
         playerTop = new Player(camera, playerSize, playerSize, true);
         playerBottom = new Player(camera, playerSize, playerSize, false);
 
         shape = new ShapeRenderer();
-//        winner = new BitmapFont();
         FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(
-                Gdx.files.internal("Britannic.ttf")
+                Gdx.files.internal("fonts/Britannic.ttf")
         );
         FreeTypeFontGenerator.FreeTypeFontParameter freeTypeFontParameter =
                 new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -100,8 +93,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         fontGenerator.generateData(freeTypeFontParameter);
         winner = fontGenerator.generateFont(freeTypeFontParameter);
         glyphLayout = new GlyphLayout();
-        mx4Font = new Matrix4();
-        oldMatrix = new Matrix4();
 
         UpKeyDown = false;
         DownKeyDown = false;
@@ -128,7 +119,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
         bottomCanShoot = true;
         topCanShoot = true;
-//        Gdx.gl.glLineWidth(playerSize / 2);
     }
 
     @Override
@@ -144,101 +134,104 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
         h = Gdx.graphics.getHeight();
         w = Gdx.graphics.getWidth();
-        System.out.println("w: " + w);
-        System.out.println("h: " + h);
-        mx4Font.setToRotation(new Vector3(camera.position.x, camera.position.y, 0), 180);
     }
 
     @Override
     public void update(float dt) {
 
-        for (int i = 0; i < touches.size(); i++){
-            TouchInfo info = touches.get(i);
-            float dx;
-            float dy;
-            switch (info.state){
-                case TOP_STICK:
-                    if (info.pos.dst(topStickOrigin) > playerSize){
-                        info.pos = topStickOrigin.cpy().mulAdd(info.pos.cpy().sub(topStickOrigin), playerSize / (info.pos.dst(topStickOrigin)));
-                    }
-                    dx = info.pos.x - topStickOrigin.x;
-                    dy = info.pos.y - topStickOrigin.y;
-                    playerTop.move(dx, dy);
-                    break;
-                case BOTTOM_STICK:
+        // not a game over
+        if (!(topWon || bottomWon)){
+            for (int i = 0; i < touches.size(); i++){
+                TouchInfo info = touches.get(i);
+                float dx;
+                float dy;
+                switch (info.state){
+                    case TOP_STICK:
+                        if (info.pos.dst(topStickOrigin) > playerSize){
+                            info.pos = topStickOrigin.cpy().mulAdd(info.pos.cpy().sub(topStickOrigin), playerSize / (info.pos.dst(topStickOrigin)));
+                        }
+                        dx = info.pos.x - topStickOrigin.x;
+                        dy = info.pos.y - topStickOrigin.y;
+                        playerTop.move(dx, dy);
+                        break;
+                    case BOTTOM_STICK:
 
-                    if (info.pos.dst(bottomStickOrigin) > playerSize){
-                        info.pos = bottomStickOrigin.cpy().mulAdd(info.pos.cpy().sub(bottomStickOrigin), playerSize / (info.pos.dst(bottomStickOrigin)));
-                    }
-                    dx = info.pos.x - bottomStickOrigin.x;
-                    dy = info.pos.y - bottomStickOrigin.y;
-                    playerBottom.move(dx, dy);
+                        if (info.pos.dst(bottomStickOrigin) > playerSize){
+                            info.pos = bottomStickOrigin.cpy().mulAdd(info.pos.cpy().sub(bottomStickOrigin), playerSize / (info.pos.dst(bottomStickOrigin)));
+                        }
+                        dx = info.pos.x - bottomStickOrigin.x;
+                        dy = info.pos.y - bottomStickOrigin.y;
+                        playerBottom.move(dx, dy);
+                        break;
+                    case TOP_SHOOT:
+                        if (topCanShoot){
+                            bulletManager.addTopBullet(playerTop);
+                            topCanShoot = false;
+                        }
+                        break;
+                    case BOTTOM_SHOOT:
+                        if (bottomCanShoot){
+                            bulletManager.addBottomBullet(playerBottom);
+                            bottomCanShoot = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (UpKeyDown) playerBottom.moveUp();
+            if (DownKeyDown) playerBottom.moveDown();
+            if (LeftKeyDown) playerBottom.moveLeft();
+            if (RightKeyDown) playerBottom.moveRight();
+            if (WKeyDown) playerTop.moveUp();
+            if (SKeyDown) playerTop.moveDown();
+            if (AKeyDown) playerTop.moveLeft();
+            if (DKeyDown) playerTop.moveRight();
+
+            playerTop.update(border, camera);
+            playerBottom.update(border, camera);
+
+            bulletManager.update(camera, playerTop, playerBottom, border);
+            perkManager.update(camera, border, playerTop, playerBottom);
+
+            switch(border.isGameOver(camera)){
+                case 1:
+                    bottomWon = true;
                     break;
-                case TOP_SHOOT:
-                    if (topCanShoot){
-                        bulletManager.addTopBullet(playerTop, playerBottom);
-                        topCanShoot = false;
-                    }
-                    break;
-                case BOTTOM_SHOOT:
-                    if (bottomCanShoot){
-                        bulletManager.addBottomBullet(playerTop, playerBottom);
-                        bottomCanShoot = false;
-                    }
+                case -1:
+                    topWon = true;
                     break;
                 default:
                     break;
             }
+
+            camera.update();
         }
-
-        if (UpKeyDown) playerBottom.moveUp();
-        if (DownKeyDown) playerBottom.moveDown();
-        if (LeftKeyDown) playerBottom.moveLeft();
-        if (RightKeyDown) playerBottom.moveRight();
-        if (WKeyDown) playerTop.moveUp();
-        if (SKeyDown) playerTop.moveDown();
-        if (AKeyDown) playerTop.moveLeft();
-        if (DKeyDown) playerTop.moveRight();
-
-        playerTop.update(border, camera);
-        playerBottom.update(border, camera);
-
-        bulletManager.update(camera, playerTop, playerBottom, border);
-
-        switch(border.isGameOver(camera)){
-            case 1:
-                bottomWon = true;
-                break;
-            case -1:
-                topWon = true;
-                break;
-            default:
-                break;
-        }
-
-        camera.update();
-
     }
 
     @Override
     public void render(SpriteBatch sb) {
+
         shape.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
         border.render(camera, bulletManager);
+        perkManager.render(camera, sb);
         playerTop.render(camera);
         playerBottom.render(camera);
         bulletManager.render(camera, border);
-        if (topWon || bottomWon){
 
+        if (topWon || bottomWon){
             shape.begin(ShapeRenderer.ShapeType.Filled);
+            shape.setColor(Color.WHITE);
             if (bottomWon){
-                shape.setColor(Color.valueOf(Duel.CYAN100));
+//                shape.setColor(Color.valueOf(Duel.CYAN100));
                 shape.rect(0, 0, w, h);
                 shape.end();
                 playerBottom.render(camera);
             }
             else {
-                shape.setColor(Color.valueOf(Duel.RED100));
+//                shape.setColor(Color.valueOf(Duel.RED100));
                 shape.rect(0, 0, w, h);
                 shape.end();
                 playerTop.render(camera);
@@ -255,21 +248,23 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                 gsm.push(new PlayState(gsm));
             }
         }
+
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA,GL20.GL_ONE_MINUS_SRC_ALPHA);
         if (topStickOrigin != null) {
             shape.begin(ShapeRenderer.ShapeType.Filled);
-            shape.setColor(1, 1, 1, 0.5f);
+            shape.setColor(1, 1, 1, 0.3f);
             shape.circle(topStickOrigin.x, topStickOrigin.y, playerSize);
             shape.end();
         }
         if (bottomStickOrigin != null) {
             shape.begin(ShapeRenderer.ShapeType.Filled);
-            shape.setColor(1, 1, 1, 0.5f);
+            shape.setColor(1, 1, 1, 0.3f);
             shape.circle(bottomStickOrigin.x, bottomStickOrigin.y, playerSize);
             shape.end();
         }
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
         for(int i = 0; i < maxTouches; i++){
             if(touches.get(i).state == State.BOTTOM_STICK){
                 x = touches.get(i).pos.x;
@@ -280,7 +275,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                 shape.setColor(Color.valueOf(Duel.CYAN400));
                 shape.circle(x, y, playerSize / 4);
                 shape.end();
-
             }
             else if(touches.get(i).state == State.TOP_STICK){
                 x = touches.get(i).pos.x;
@@ -304,9 +298,9 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         sb.setTransformMatrix(mx4Font);
 
         sb.begin();
-        s = text;
+        String s = text;
         winner.setColor(color);
-        glyphLayout.setText(winner,s);
+        glyphLayout.setText(winner, s);
         float winnerTextWidth = glyphLayout.width;
         float winnerTextHeight = glyphLayout.height;
         winner.draw(sb, glyphLayout, - (winnerTextWidth / 2), winnerTextHeight / 2);
@@ -323,7 +317,6 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         perkManager.dispose();
         shape.dispose();
         winner.dispose();
-
     }
 
     @Override
@@ -355,11 +348,11 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                 break;
             // Bottom player shoots
             case Input.Keys.P:
-                bulletManager.addBottomBullet(playerTop, playerBottom);
+                bulletManager.addBottomBullet(playerBottom);
                 break;
             // Top player shoots
             case Input.Keys.SPACE:
-                bulletManager.addTopBullet(playerTop, playerBottom);
+                bulletManager.addTopBullet(playerTop);
                 break;
             case Input.Keys.O:
                 // TODO Show top perk
@@ -445,7 +438,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
                     }
                 }
             }
-            else{
+            else if (y > border.getPosition().y + border.getBorderHeight()){
                 if (topRightTouched){
                     info.state = State.TOP_SHOOT;
                 }
