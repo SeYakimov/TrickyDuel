@@ -26,10 +26,10 @@ public class Perk {
     public Perk(Texture texture, OrthographicCamera camera, PerkType type, boolean isTop, int playerSize, Border border){
         this.texture = texture;
         this.radius = playerSize / 2;
-        bounds = new Circle();
+//        bounds = new Circle();
         this.isTop = isTop;
         this.type = type;
-        randPosition(camera, border, playerSize, bounds);
+        bounds = randPosition(camera, border, playerSize);
         shape = new ShapeRenderer();
     }
 
@@ -85,7 +85,7 @@ public class Perk {
 
         sb.setProjectionMatrix(camera.combined);
         sb.begin();
-        sb.draw(texture, position.x, position.y, 2 * radius, 2 * radius);
+        sb.draw(texture, bounds.x,  bounds.y, 2 * radius, 2 * radius);
         sb.end();
     }
 
@@ -93,9 +93,9 @@ public class Perk {
 
     }
 
-    private void randPosition(OrthographicCamera camera, Border border, int playerSize, Circle bounds){
+    private Circle randPosition(OrthographicCamera camera, Border border, int playerSize){
         Random rand = new Random();
-
+        Circle bounds = new Circle();
         if (isTop) {
             position = new Vector2(rand.nextInt((int)(camera.viewportWidth - playerSize)),
                     rand.nextInt((int)(camera.viewportHeight - playerSize - border.getPosition().y - border.getBorderHeight()) + 1) + (int)(border.getPosition().y) + border.getBorderHeight());
@@ -107,5 +107,6 @@ public class Perk {
         }
         bounds.setPosition(position.cpy());
         bounds.setRadius(radius);
+        return bounds;
     }
 }

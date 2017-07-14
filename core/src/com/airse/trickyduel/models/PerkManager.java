@@ -24,14 +24,11 @@ public class PerkManager {
     }
 
     public void addTopPerk(PerkType type, OrthographicCamera camera, Border border){
-
         topPerks.add(new Perk(chooseTexture(type), camera, type, true, perkSize, border));
-
     }
 
     public void addBottomPerk(PerkType type, OrthographicCamera camera, Border border){
         bottomPerks.add(new Perk(chooseTexture(type), camera, type, false, perkSize, border));
-
     }
     private Texture chooseTexture(PerkType type){
         Texture texture;
@@ -56,7 +53,7 @@ public class PerkManager {
                 texture = new Texture("perks/speed_boost.png");
                 break;
 
-            case DECREASES_SPEED:
+            case DECREASE_SPEED:
                 texture = new Texture("perks/decreases_speed.png");
                 break;
 
@@ -75,23 +72,34 @@ public class PerkManager {
         return texture;
     }
 
-    public void update(OrthographicCamera camera, Border border, Player topPlayer, Player bottomPlayer){
-        if (System.currentTimeMillis() - startTimeTop > 8000 && topPerks.size < 2){
-            PerkType temp;
-            temp = PerkType.getRandom();
-            topPerks.add(new Perk(chooseTexture(temp), camera, temp, true, perkSize, border));
+    public void update(OrthographicCamera camera, Border border, Player topPlayer, Player bottomPlayer, BulletManager bulletManager){
+        if (System.currentTimeMillis() - startTimeTop > 6000 && topPerks.size < 2){
+            PerkType tempType = PerkType.getRandom();
+            Texture tempTexture = chooseTexture(tempType);
+
+            while (tempType == PerkType.RANDOM_PERK){
+                tempType = PerkType.getRandom();
+            }
+
+            topPerks.add(new Perk(tempTexture, camera, tempType, true, perkSize, border));
             startTimeTop = System.currentTimeMillis();
         }
-        if (System.currentTimeMillis() - startTimeBottom > 8000 && bottomPerks.size < 2){
-            PerkType temp;
-            temp = PerkType.getRandom();
-            bottomPerks.add(new Perk(chooseTexture(temp), camera, temp, false, perkSize, border));
+        if (System.currentTimeMillis() - startTimeBottom > 6000 && bottomPerks.size < 2){
+            PerkType tempType = PerkType.getRandom();
+            Texture tempTexture = chooseTexture(tempType);
+
+            while (tempType == PerkType.RANDOM_PERK){
+                tempType = PerkType.getRandom();
+            }
+
+            bottomPerks.add(new Perk(tempTexture, camera, tempType, false, perkSize, border));
+
             startTimeBottom = System.currentTimeMillis();
         }
         for (Perk top: topPerks){
             if (top.isCollides(topPlayer.getBounds())){
+                doPerk(top.getType(), topPlayer, bottomPlayer, bulletManager,  true);
                 topPerks.removeValue(top, true);
-                //TODO top player intersects perk
             }
             if (top.getBounds().y < border.getPosition().y + border.getBorderHeight()){
                 topPerks.removeValue(top, true);
@@ -99,8 +107,8 @@ public class PerkManager {
         }
         for (Perk bottom : bottomPerks){
             if (bottom.isCollides(bottomPlayer.getBounds())){
+                doPerk(bottom.getType(), topPlayer, bottomPlayer, bulletManager, false);
                 bottomPerks.removeValue(bottom, true);
-                //TODO bottom player intersects perk
             }
             if (bottom.getBounds().y > border.getPosition().y - bottom.getRadius() * 2){
                 bottomPerks.removeValue(bottom, true);
@@ -127,4 +135,81 @@ public class PerkManager {
         }
     }
 
+    public Array<Perk> getTopPerks() {
+        return topPerks;
+    }
+
+    public Array<Perk> getBottomPerks() {
+        return bottomPerks;
+    }
+
+    private void doPerk(PerkType type, Player topPlayer, Player bottomPlayer, BulletManager bulletManager,  boolean isTop){
+        switch (type){
+            case OPPO_FREEZE:
+                if (isTop){
+                    bottomPlayer.freeze();
+                }
+                else{
+                    topPlayer.freeze();
+                }
+                break;
+
+            case YOU_FREEZE:
+                if (isTop){
+                    topPlayer.freeze();
+                }
+                else {
+                    bottomPlayer.freeze();
+                }
+                break;
+
+            case OPPO_GROW:
+                if (isTop){
+                    bottomPlayer.grow();
+                }
+                else {
+                    topPlayer.grow();
+                }
+                break;
+
+            case YOU_GROW:
+                if (isTop){
+                    topPlayer.grow();
+                }
+                else {
+                    bottomPlayer.grow();
+                }
+                break;
+
+            case INCREASE_SPEED:
+                if (isTop){
+                    topPlayer.speedBoost();
+                }
+                else {
+                    bottomPlayer.speedBoost();
+                }
+                break;
+
+            case DECREASE_SPEED:
+                if (isTop){
+                    topPlayer.reduceSpeed();
+                }
+                else {
+                    bottomPlayer.reduceSpeed();
+                }
+                break;
+
+            case OPPO_BULLETS:
+                bulletManager.infinityBullets(!isTop);
+                break;
+
+            case YOU_BULLETS:
+                bulletManager.infinityBullets(isTop);
+                break;
+
+            default:
+
+                break;
+        }
+    }
 }

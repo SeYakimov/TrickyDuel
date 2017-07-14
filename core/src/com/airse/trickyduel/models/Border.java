@@ -19,8 +19,10 @@ public class Border {
     private Difficulty difficulty;
     private ShapeRenderer shape;
 
-    private Vector2[] shadowPos;
-    private Vector2 shadowSize;
+    private Vector2[] shadowPosChessBoard;
+    private Vector2[] shadowPosLines;
+    private Vector2 shadowSizeChessBoard;
+    private Vector2 shadowSizeLines;
 
     public Border(Difficulty difficulty, OrthographicCamera camera, int playerSize) {
         this.difficulty = difficulty;
@@ -29,17 +31,23 @@ public class Border {
         shape = new ShapeRenderer();
         movement = playerSize;
 
-        shadowPos = new Vector2[9];
-        shadowPos[0] = new Vector2(0,                            camera.viewportHeight * 5 / 6);
-        shadowPos[1] = new Vector2(0,                            camera.viewportHeight * 3 / 6);
-        shadowPos[2] = new Vector2(0,                            camera.viewportHeight * 1 / 6);
-        shadowPos[3] = new Vector2(camera.viewportWidth * 1 / 3, camera.viewportHeight * 4 / 6);
-        shadowPos[4] = new Vector2(camera.viewportWidth * 1 / 3, camera.viewportHeight * 2 / 6);
-        shadowPos[5] = new Vector2(camera.viewportWidth * 1 / 3, 0);
-        shadowPos[6] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 5 / 6);
-        shadowPos[7] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 3 / 6);
-        shadowPos[8] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 1 / 6);
-        shadowSize = new Vector2(camera.viewportWidth / 3, camera.viewportHeight / 6);
+        shadowPosChessBoard = new Vector2[9];
+        shadowPosChessBoard[0] = new Vector2(0,                            camera.viewportHeight * 5 / 6);
+        shadowPosChessBoard[1] = new Vector2(0,                            camera.viewportHeight * 3 / 6);
+        shadowPosChessBoard[2] = new Vector2(0,                            camera.viewportHeight * 1 / 6);
+        shadowPosChessBoard[3] = new Vector2(camera.viewportWidth * 1 / 3, camera.viewportHeight * 4 / 6);
+        shadowPosChessBoard[4] = new Vector2(camera.viewportWidth * 1 / 3, camera.viewportHeight * 2 / 6);
+        shadowPosChessBoard[5] = new Vector2(camera.viewportWidth * 1 / 3, 0);
+        shadowPosChessBoard[6] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 5 / 6);
+        shadowPosChessBoard[7] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 3 / 6);
+        shadowPosChessBoard[8] = new Vector2(camera.viewportWidth * 2 / 3, camera.viewportHeight * 1 / 6);
+
+        shadowPosLines = new Vector2[8];
+        for (int i = 0; i < shadowPosLines.length; i++){
+            shadowPosLines[i] = new Vector2(0, camera.viewportHeight * 2 * i / 15);
+        }
+        shadowSizeChessBoard = new Vector2(camera.viewportWidth / 3, camera.viewportHeight / 6);
+        shadowSizeLines = new Vector2(camera.viewportWidth, camera.viewportHeight / 15);
     }
 
     public int getBorderHeight() {
@@ -50,7 +58,7 @@ public class Border {
         return position;
     }
 
-    public void setPosition(OrthographicCamera camera) {
+    private void setPosition(OrthographicCamera camera) {
         switch (difficulty)
         {
             case EASY:
@@ -122,8 +130,8 @@ public class Border {
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
         shape.setColor(0, 0, 0, 0.1f);
-        for (int i = 0; i < shadowPos.length; i++){
-            shape.rect(shadowPos[i].x, shadowPos[i].y, shadowSize.x, shadowSize.y);
+        for (Vector2 shadowPosLine : shadowPosLines) {
+            shape.rect(shadowPosLine.x, shadowPosLine.y, shadowSizeLines.x, shadowSizeLines.y);
         }
 
         shape.setColor(Color.WHITE);

@@ -1,6 +1,7 @@
 package com.airse.trickyduel.models;
 
 import com.airse.trickyduel.Duel;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -10,7 +11,9 @@ import com.badlogic.gdx.math.Vector2;
 public class Player {
 
     private Vector2 size;
+    private Vector2 sizeOrigin;
     private int speed;
+    private float movement;
 
     private boolean isTop;
     private Rectangle bounds;
@@ -30,11 +33,13 @@ public class Player {
         }
 
         size = new Vector2(width, height);
-        speed = (int)(width / 8);
+        sizeOrigin = size.cpy();
+        speed = width / 8;
         shape = new ShapeRenderer();
         bounds = new Rectangle();
         bounds.setPosition(position);
         bounds.setSize(width, height);
+        movement = 1;
     }
     public Vector2 getPosition() {
         return new Vector2(bounds.x, bounds.y);
@@ -42,24 +47,24 @@ public class Player {
 
     public void moveLeft()
     {
-        bounds.x -= speed;
+        bounds.x -= speed * movement;
     }
     public void moveRight()
     {
-        bounds.x += speed;
+        bounds.x += speed * movement;
     }
     public void moveUp()
     {
-        bounds.y += speed;
+        bounds.y += speed * movement;
     }
     public void moveDown()
     {
-        bounds.y -= speed;
+        bounds.y -= speed * movement;
 
     }
     public void move(float x, float y){
-        bounds.x += (x / 8);
-        bounds.y += (y / 8);
+        bounds.x += (x / 8) * movement;
+        bounds.y += (y / 8) * movement;
     }
     public void update(Border border, OrthographicCamera camera){
         if (isTop){
@@ -89,7 +94,7 @@ public class Player {
         shape.rect(bounds.x, bounds.y, size.x, size.y);
 
         shape.setColor(Color.WHITE);
-        shape.rect(bounds.x + size.x / 3, bounds.y + size.y / 3, size.x / 3, size.y / 3);
+        shape.rect(bounds.x + sizeOrigin.x / 3, bounds.y + sizeOrigin.y / 3, size.x - sizeOrigin.x * 2 / 3, size.y - sizeOrigin.y * 2 / 3);
         shape.end();
     }
 
@@ -103,5 +108,78 @@ public class Player {
 
     public Vector2 getSize() {
         return size;
+    }
+
+    public void freeze(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                movement = 0;
+                while (System.currentTimeMillis() < time + 2000){}
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        movement = 1;
+                    }
+                });
+            }
+        }).start();
+    }
+
+    public void grow(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                final Vector2 temp = sizeOrigin.cpy();
+                size.scl(2, 1);
+                bounds.setHeight(size.y);
+                bounds.setWidth(size.x);
+                while (System.currentTimeMillis() < time + 5000){}
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        size = temp.cpy();
+                        bounds.setHeight(sizeOrigin.y);
+                        bounds.setWidth(sizeOrigin.x);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    public void speedBoost(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                movement = 2;
+                while (System.currentTimeMillis() < time + 5000){}
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        movement = 1;
+                    }
+                });
+            }
+        }).start();
+    }
+
+    public void reduceSpeed(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                movement = 0.5f;
+                while (System.currentTimeMillis() < time + 5000){}
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        movement = 1;
+                    }
+                });
+            }
+        }).start();
     }
 }

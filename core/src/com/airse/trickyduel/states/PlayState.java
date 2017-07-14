@@ -89,7 +89,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         );
         FreeTypeFontGenerator.FreeTypeFontParameter freeTypeFontParameter =
                 new FreeTypeFontGenerator.FreeTypeFontParameter();
-        freeTypeFontParameter.size = (int)(playerSize);
+        freeTypeFontParameter.size = playerSize;
         fontGenerator.generateData(freeTypeFontParameter);
         winner = fontGenerator.generateFont(freeTypeFontParameter);
         glyphLayout = new GlyphLayout();
@@ -192,8 +192,8 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
             playerTop.update(border, camera);
             playerBottom.update(border, camera);
 
+            perkManager.update(camera, border, playerTop, playerBottom, bulletManager);
             bulletManager.update(camera, playerTop, playerBottom, border);
-            perkManager.update(camera, border, playerTop, playerBottom);
 
             switch(border.isGameOver(camera)){
                 case 1:
@@ -288,7 +288,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
             }
         }
     }
-    public void printText(SpriteBatch sb, float posX, float posY, float angle, String text, Color color)
+    private void printText(SpriteBatch sb, float posX, float posY, float angle, String text, Color color)
     {
         Matrix4 oldTransformMatrix = sb.getTransformMatrix().cpy();
 
@@ -298,9 +298,8 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
         sb.setTransformMatrix(mx4Font);
 
         sb.begin();
-        String s = text;
         winner.setColor(color);
-        glyphLayout.setText(winner, s);
+        glyphLayout.setText(winner, text);
         float winnerTextWidth = glyphLayout.width;
         float winnerTextHeight = glyphLayout.height;
         winner.draw(sb, glyphLayout, - (winnerTextWidth / 2), winnerTextHeight / 2);

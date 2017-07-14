@@ -14,14 +14,14 @@ public class Bullet {
 
     private int radius;
     private ShapeRenderer shape;
-//    private Vector2 position;
+    private Vector2 position;
     private Circle bounds;
     private boolean isTop;
 
     public Bullet(Vector2 position, boolean isTop, int bulletRadius) {
         radius = bulletRadius / 6;
         movement = bulletRadius / 10;
-//        this.position = position;
+        this.position = position;
         this.isTop = isTop;
         bounds = new Circle();
         bounds.setRadius(radius);
@@ -55,8 +55,8 @@ public class Bullet {
         rect.getCenter(rectCenter);
         float cornerDistance_sq;
 
-        circleDistance.x = Math.abs(getCenter().x - rectCenter.x);
-        circleDistance.y = Math.abs(getCenter().y - rectCenter.y);
+        circleDistance.x = Math.abs(position.x - rectCenter.x);
+        circleDistance.y = Math.abs(position.y - rectCenter.y);
 
         if (circleDistance.x > (rect.width/2 + radius)) { return false; }
         if (circleDistance.y > (rect.height/2 + radius)) { return false; }
@@ -71,32 +71,39 @@ public class Bullet {
     }
 
     private void moveDown(){
-        bounds.y -= movement;
+        position.y -= movement;
+        bounds.setPosition(position.cpy().add(-radius, -radius));
+
     }
     private void moveUp(){
-        bounds.y += movement;
+        position.y += movement;
+        bounds.setPosition(position.cpy().add(-radius, -radius));
     }
 
     public void render(Border border ,OrthographicCamera camera){
         shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
         if (isTop){
-            if (getCenter().y < border.getPosition().y + border.getBorderHeight()) {
+            if (position.y < border.getPosition().y + border.getBorderHeight()) {
                 shape.setColor(Color.BLACK);
             }
             else {
                 shape.setColor(Color.valueOf(Duel.TOP_COLOR));
             }
-            shape.circle(getCenter().x, getCenter().y, radius);
+            shape.circle(position.x, position.y, radius);
+//            shape.setColor(Color.BLACK);
+//            shape.rect(bounds.x, bounds.y, radius * 2, radius * 2);
         }
         else{
-            if (getCenter().y > border.getPosition().y) {
+            if (position.y > border.getPosition().y) {
                 shape.setColor(Color.BLACK);
             }
             else {
                 shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
             }
-            shape.circle(getCenter().x, getCenter().y, radius);
+            shape.circle(position.x, position.y, radius);
+//            shape.setColor(Color.BLACK);
+//            shape.rect(bounds.x, bounds.y, radius * 2, radius * 2);
         }
         shape.end();
     }
