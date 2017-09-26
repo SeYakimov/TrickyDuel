@@ -23,7 +23,6 @@ import com.badlogic.gdx.math.Vector3;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class PlayState extends com.airse.trickyduel.states.State implements InputProcessor {
     private class TouchInfo {
@@ -195,6 +194,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
             perkManager.update(camera, border, playerTop, playerBottom, bulletManager);
             bulletManager.update(camera, playerTop, playerBottom, border);
 
+            // have we got a winner?
             switch(border.isGameOver(camera)){
                 case 1:
                     bottomWon = true;
@@ -215,7 +215,7 @@ public class PlayState extends com.airse.trickyduel.states.State implements Inpu
 
         shape.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
-        border.render(camera, bulletManager);
+        border.render(sb, camera, bulletManager);
         perkManager.render(camera, sb);
         playerTop.render(camera);
         playerBottom.render(camera);

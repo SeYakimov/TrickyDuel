@@ -1,7 +1,6 @@
 package com.airse.trickyduel.models;
 
 import com.airse.trickyduel.PerkType;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,21 +15,23 @@ public class Perk {
 
 
     private ShapeRenderer shape;
-    private Vector2 position;
+    private Vector2 position, playerCenterPos;
     private Circle bounds;
     private boolean isTop;
     private PerkType type;
     private int radius;
     private Texture texture;
 
-    public Perk(Texture texture, OrthographicCamera camera, PerkType type, boolean isTop, int playerSize, Border border){
+    public Perk(Texture texture, OrthographicCamera camera, PerkType type, boolean isTop, int playerSize, Border border, Vector2 playerCenterPos){
         this.texture = texture;
         this.radius = playerSize / 2;
 //        bounds = new Circle();
         this.isTop = isTop;
         this.type = type;
+        this.playerCenterPos = playerCenterPos;
         bounds = randPosition(camera, border, playerSize);
         shape = new ShapeRenderer();
+
     }
 
 
@@ -96,14 +97,24 @@ public class Perk {
     private Circle randPosition(OrthographicCamera camera, Border border, int playerSize){
         Random rand = new Random();
         Circle bounds = new Circle();
+        Circle exceptionBounds = new Circle();
+        exceptionBounds.setPosition(playerCenterPos);
+        exceptionBounds.setRadius(playerSize);
         if (isTop) {
-            position = new Vector2(rand.nextInt((int)(camera.viewportWidth - playerSize)),
+            do{
+                position = new Vector2(rand.nextInt((int)(camera.viewportWidth - playerSize)),
                     rand.nextInt((int)(camera.viewportHeight - playerSize - border.getPosition().y - border.getBorderHeight()) + 1) + (int)(border.getPosition().y) + border.getBorderHeight());
-
+                bounds.setPosition(position);
+            }
+            while (bounds.overlaps(exceptionBounds));
         }
         else {
-            position = new Vector2(rand.nextInt((int)(camera.viewportWidth - playerSize)),
-                    rand.nextInt((int)(border.getPosition().y - playerSize) + 1));
+            do{
+                position = new Vector2(rand.nextInt((int)(camera.viewportWidth - playerSize)),
+                        rand.nextInt((int)(border.getPosition().y - playerSize) + 1));
+                bounds.setPosition(position);
+            }
+            while (bounds.overlaps(exceptionBounds));
         }
         bounds.setPosition(position.cpy());
         bounds.setRadius(radius);

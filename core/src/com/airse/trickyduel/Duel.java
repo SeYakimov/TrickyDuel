@@ -23,6 +23,8 @@ public class Duel extends ApplicationAdapter {
     public static final String RED200 = "ff5252";
     public static final String RED100 = "ff8a80";
     public static final String GREEN400 = "00e676";
+	public static final String DARK_BLUE = "2a2c34";
+
     public static final String TOP_COLOR = RED400;
     public static final String BOTTOM_COLOR = CYAN400;
 

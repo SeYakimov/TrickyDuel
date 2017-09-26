@@ -22,14 +22,13 @@ public class PerkManager {
         startTimeBottom = System.currentTimeMillis();
 
     }
-
-    public void addTopPerk(PerkType type, OrthographicCamera camera, Border border){
-        topPerks.add(new Perk(chooseTexture(type), camera, type, true, perkSize, border));
-    }
-
-    public void addBottomPerk(PerkType type, OrthographicCamera camera, Border border){
-        bottomPerks.add(new Perk(chooseTexture(type), camera, type, false, perkSize, border));
-    }
+//    public void addTopPerk(PerkType type, OrthographicCamera camera, Border border){
+//        topPerks.add(new Perk(chooseTexture(type), camera, type, true, perkSize, border));
+//    }
+//
+//    public void addBottomPerk(PerkType type, OrthographicCamera camera, Border border){
+//        bottomPerks.add(new Perk(chooseTexture(type), camera, type, false, perkSize, border));
+//    }
     private Texture chooseTexture(PerkType type){
         Texture texture;
         switch (type){
@@ -81,7 +80,7 @@ public class PerkManager {
                 tempType = PerkType.getRandom();
             }
 
-            topPerks.add(new Perk(tempTexture, camera, tempType, true, perkSize, border));
+            topPerks.add(new Perk(tempTexture, camera, tempType, true, perkSize, border, topPlayer.getCenter()));
             startTimeTop = System.currentTimeMillis();
         }
         if (System.currentTimeMillis() - startTimeBottom > 6000 && bottomPerks.size < 2){
@@ -92,7 +91,7 @@ public class PerkManager {
                 tempType = PerkType.getRandom();
             }
 
-            bottomPerks.add(new Perk(tempTexture, camera, tempType, false, perkSize, border));
+            bottomPerks.add(new Perk(tempTexture, camera, tempType, false, perkSize, border, bottomPlayer.getCenter()));
 
             startTimeBottom = System.currentTimeMillis();
         }

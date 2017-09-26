@@ -6,6 +6,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 
@@ -15,6 +17,8 @@ public class Border {
 
     private Vector2 position;
     private int borderHeight;
+    private int GAP;
+    private int BULLET_BAR_LENGTH;
 
     private Difficulty difficulty;
     private ShapeRenderer shape;
@@ -23,6 +27,8 @@ public class Border {
     private Vector2[] shadowPosLines;
     private Vector2 shadowSizeChessBoard;
     private Vector2 shadowSizeLines;
+
+    private Texture texture;
 
     public Border(Difficulty difficulty, OrthographicCamera camera, int playerSize) {
         this.difficulty = difficulty;
@@ -48,6 +54,10 @@ public class Border {
         }
         shadowSizeChessBoard = new Vector2(camera.viewportWidth / 3, camera.viewportHeight / 6);
         shadowSizeLines = new Vector2(camera.viewportWidth, camera.viewportHeight / 15);
+
+        texture = new Texture("perks/without bg/random.png");
+        GAP = borderHeight / 8;
+        BULLET_BAR_LENGTH = (int)((camera.viewportWidth - 3.5f * getBorderHeight()) / 2);
     }
 
     public int getBorderHeight() {
@@ -94,30 +104,22 @@ public class Border {
         else return 0;
     }
 
-    public void render(OrthographicCamera camera, BulletManager bulletManager){
+    public void render(SpriteBatch sb, OrthographicCamera camera, BulletManager bulletManager){
+        sb.setProjectionMatrix(camera.combined);
         shape.setProjectionMatrix(camera.combined);
 
         shape.begin(ShapeRenderer.ShapeType.Filled);
-        shape.setColor(Color.valueOf(Duel.TOP_COLOR));
+        shape.setColor(Color.valueOf(Duel.DARK_BLUE));
         shape.rect(camera.position.x - camera.viewportWidth / 2, camera.position.y - camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
-        shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
+        shape.setColor(Color.valueOf(Duel.DARK_BLUE));
         shape.rect(camera.position.x - camera.viewportWidth / 2, position.y, camera.viewportWidth, camera.viewportHeight);
         shape.end();
 
         drawShadow(camera);
+        drawBulletsBar(camera, bulletManager);
+        drawScore(camera, sb);
+        drawPerk(camera, sb);
 
-        shape.begin(ShapeRenderer.ShapeType.Filled);
-        shape.setColor(Color.valueOf(Duel.CYAN100));
-        shape.rect(position.x, position.y + borderHeight / 3, camera.viewportWidth / 3, borderHeight / 3);
-        shape.setColor(Color.valueOf(Duel.CYAN400));
-        shape.rect(position.x, position.y + borderHeight / 3, camera.viewportWidth / 3 * bulletManager.getBulletNumBottom() / bulletManager.getBulletMaxNum(), borderHeight / 3);
-
-        shape.setColor(Color.valueOf(Duel.RED100));
-        shape.rect(camera.viewportWidth * 2 / 3, position.y + borderHeight / 3, camera.viewportWidth / 3, borderHeight / 3);
-        shape.setColor(Color.valueOf(Duel.RED400));
-        shape.rect(camera.viewportWidth * 2 / 3 + camera.viewportWidth / 3 * (bulletManager.getBulletMaxNum() - bulletManager.getBulletNumTop()) / bulletManager.getBulletMaxNum(),
-                   position.y + borderHeight / 3, camera.viewportWidth / 3 * bulletManager.getBulletNumTop() / bulletManager.getBulletMaxNum(), borderHeight / 3);
-        shape.end();
     }
 
     public void dispose() {
@@ -135,8 +137,71 @@ public class Border {
         }
 
         shape.setColor(Color.WHITE);
-        shape.rect(position.x, position.y, camera.viewportWidth, borderHeight);
+        shape.rect(position.x, position.y, camera.viewportWidth, getBorderHeight());
         shape.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
+    private void drawBulletsBar(OrthographicCamera camera, BulletManager bulletManager){
+
+//        shape.begin(ShapeRenderer.ShapeType.Filled);
+//        shape.setColor(Color.valueOf(Duel.CYAN100));
+//        shape.rect(position.x, position.y + borderHeight / 3, camera.viewportWidth / 3, borderHeight / 3);
+//        shape.setColor(Color.valueOf(Duel.CYAN400));
+//        shape.rect(position.x, position.y + borderHeight / 3, camera.viewportWidth / 3 * bulletManager.getBulletNumBottom() / bulletManager.getBulletMaxNum(), borderHeight / 3);
+//
+//        shape.setColor(Color.valueOf(Duel.RED100));
+//        shape.rect(camera.viewportWidth * 2 / 3, position.y + borderHeight / 3, camera.viewportWidth / 3, borderHeight / 3);
+//        shape.setColor(Color.valueOf(Duel.RED400));
+//        shape.rect(camera.viewportWidth * 2 / 3 + camera.viewportWidth / 3 * (bulletManager.getBulletMaxNum() - bulletManager.getBulletNumTop()) / bulletManager.getBulletMaxNum(),
+//                position.y + borderHeight / 3, camera.viewportWidth / 3 * bulletManager.getBulletNumTop() / bulletManager.getBulletMaxNum(), borderHeight / 3);
+//        shape.end();
+
+//        shape.begin(ShapeRenderer.ShapeType.Filled);
+//        shape.setColor(Color.valueOf(Duel.CYAN100));
+//        shape.rect(position.x, position.y + borderHeight / 4, camera.viewportWidth / 3, borderHeight / 2);
+//        shape.setColor(Color.valueOf(Duel.CYAN400));
+//        shape.rect(position.x, position.y + borderHeight / 4, camera.viewportWidth / 3 * bulletManager.getBulletNumBottom() / bulletManager.getBulletMaxNum(), borderHeight / 2);
+//
+//        shape.setColor(Color.valueOf(Duel.RED100));
+//        shape.rect(camera.viewportWidth * 2 / 3, position.y + borderHeight / 4, camera.viewportWidth / 3, borderHeight / 2);
+//        shape.setColor(Color.valueOf(Duel.RED400));
+//        shape.rect(camera.viewportWidth * 2 / 3 + camera.viewportWidth / 3 * (bulletManager.getBulletMaxNum() - bulletManager.getBulletNumTop()) / bulletManager.getBulletMaxNum(),
+//                position.y + borderHeight / 4, camera.viewportWidth / 3 * bulletManager.getBulletNumTop() / bulletManager.getBulletMaxNum(), borderHeight / 2);
+//        shape.end();
+
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+
+        shape.setColor(Color.valueOf(Duel.TOP_COLOR));
+        shape.rect(camera.viewportWidth - BULLET_BAR_LENGTH,
+                   getPosition().y + getBorderHeight() / 8,
+                   BULLET_BAR_LENGTH * bulletManager.getBulletNumTop() / bulletManager.getBulletMaxNum(),
+                   getBorderHeight() * 6 / 8);
+
+        shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
+        shape.rect(BULLET_BAR_LENGTH * (bulletManager.getBulletMaxNum() - bulletManager.getBulletNumBottom()) / bulletManager.getBulletMaxNum(),
+                   getPosition().y + getBorderHeight() / 8,
+                   BULLET_BAR_LENGTH * bulletManager.getBulletNumBottom() / bulletManager.getBulletMaxNum(),
+                   getBorderHeight() * 6 / 8);
+        shape.end();
+    }
+
+    private void drawScore(OrthographicCamera camera, SpriteBatch sb){
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+        shape.setColor(Color.valueOf(Duel.TOP_COLOR));
+        shape.rect(camera.position.x + getBorderHeight() / 2 + GAP, getPosition().y, getBorderHeight(), getBorderHeight());
+        shape.setColor(Color.valueOf(Duel.BOTTOM_COLOR));
+        shape.rect(camera.position.x - getBorderHeight() * 3 / 2 - GAP, getPosition().y, getBorderHeight(), getBorderHeight());
+        shape.end();
+    }
+
+    private void drawPerk(OrthographicCamera camera, SpriteBatch sb){
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+        shape.setColor(Color.valueOf(Duel.RED400));
+        shape.rect(camera.position.x - getBorderHeight() / 2, getPosition().y, getBorderHeight(), getBorderHeight());
+        shape.end();
+        sb.begin();
+        sb.draw(texture, (int)(camera.position.x - getBorderHeight() / 2), (int)getPosition().y, getBorderHeight(), getBorderHeight());
+        sb.end();
     }
 }
